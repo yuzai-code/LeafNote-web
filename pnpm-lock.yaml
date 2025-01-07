@@ -45,8 +45,11 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^5.0.0
         version: 5.2.1(vite@5.4.11(@types/node@20.17.12)(sass@1.83.1))(vue@3.5.13(typescript@5.6.3))
+      '@vue/runtime-core':
+        specifier: ^3.5.13
+        version: 3.5.13
       '@vue/tsconfig':
-        specifier: ^0.5.0
+        specifier: ^0.5.1
         version: 0.5.1
       eslint:
         specifier: ^8.0.0
