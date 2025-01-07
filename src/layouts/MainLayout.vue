@@ -51,7 +51,8 @@
 </template>
 
 <script setup lang="ts">
-import { Moon, Sun, Home, DocDetail, FolderTree } from '@icon-park/vue-next'
+import { Moon, Sun, Home, DocDetail } from '@icon-park/vue-next'
+import { useOsTheme } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 
 const router = useRouter()
@@ -77,7 +78,6 @@ const menuOptions: MenuOption[] = [
   {
     label: '分类',
     key: 'categories',
-    icon: renderIcon(FolderTree),
   }
 ]
 
