@@ -101,7 +101,6 @@ const renderTreeLabel = (info: { option: TreeOption }) => {
         },
         [
           h(
-            NButton,
             {
               size: 'tiny',
               onClick: (e: Event) => {
@@ -112,7 +111,6 @@ const renderTreeLabel = (info: { option: TreeOption }) => {
             { icon: () => h(Edit) }
           ),
           h(
-            NButton,
             {
               size: 'tiny',
               onClick: (e: Event) => {
