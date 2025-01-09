@@ -1,9 +1,8 @@
 <template>
   <div class="notes-container">
-    <!-- 左侧笔记列表 -->
+    <!-- 左侧侧边栏 -->
     <div class="notes-sidebar">
       <div class="sidebar-header">
-        <n-h3>笔记列表</n-h3>
         <n-button text type="primary" @click="handleNewNote">
           <template #icon>
             <n-icon><AddCircleSharp /></n-icon>
@@ -11,6 +10,8 @@
           新建笔记
         </n-button>
       </div>
+      
+      <!-- 搜索框 -->
       <n-input
         v-model:value="searchText"
         type="text"
@@ -21,25 +22,66 @@
           <n-icon><SearchOutline /></n-icon>
         </template>
       </n-input>
-      <div class="notes-list">
-        <div
-          v-for="note in filteredNotes"
-          :key="note.id"
-          class="note-item"
-          :class="{ active: currentNote?.id === note.id }"
-          @click="handleSelectNote(note)"
-        >
-          <div class="note-title">{{ note.title || '未命名笔记' }}</div>
-          <div class="note-meta">
-            <span class="note-date">{{ formatDate(note.created_at) }}</span>
-            <n-space>
-              <n-tag v-if="note.category" size="small" :bordered="false">
-                {{ note.category.name }}
+
+      <!-- 标签页 -->
+      <n-tabs
+        type="segment"
+        size="small"
+        class="sidebar-tabs"
+        v-model:value="activeTab"
+      >
+        <!-- 笔记列表标签页 -->
+        <n-tab-pane name="notes" tab="笔记">
+          <div class="notes-list">
+            <div
+              v-for="note in filteredNotes"
+              :key="note.id"
+              class="note-item"
+              :class="{ active: currentNote?.id === note.id }"
+              @click="handleSelectNote(note)"
+            >
+              <div class="note-title">{{ note.title || '未命名笔记' }}</div>
+              <div class="note-meta">
+                <span class="note-date">{{ formatDate(note.created_at) }}</span>
+                <n-space>
+                  <n-tag v-if="note.category" size="small" :bordered="false">
+                    {{ note.category.name }}
+                  </n-tag>
+                </n-space>
+              </div>
+            </div>
+          </div>
+        </n-tab-pane>
+
+        <!-- 分类标签页 -->
+        <n-tab-pane name="categories" tab="分类">
+          <n-tree
+            block-line
+            :data="categoryTreeData"
+            :render-label="renderCategoryLabel"
+            @update:selected-keys="handleCategorySelect"
+            :selected-keys="selectedCategoryKeys"
+          />
+        </n-tab-pane>
+
+        <!-- 标签标签页 -->
+        <n-tab-pane name="tags" tab="标签">
+          <div class="tags-list">
+            <n-space wrap>
+              <n-tag
+                v-for="tag in tagOptions"
+                :key="tag.value"
+                :type="selectedTagIds.includes(tag.value) ? 'primary' : 'default'"
+                :bordered="false"
+                clickable
+                @click="handleTagClick(tag.value)"
+              >
+                {{ tag.label }}
               </n-tag>
             </n-space>
           </div>
-        </div>
-      </div>
+        </n-tab-pane>
+      </n-tabs>
     </div>
 
     <!-- 右侧编辑区 -->
@@ -52,25 +94,6 @@
           class="title-input"
           @blur="handleSaveNote"
         />
-        <n-space>
-          <n-select
-            v-model:value="currentNote.category_id"
-            :options="categoryOptions"
-            placeholder="选择分类"
-            clearable
-            class="category-select"
-            @update:value="handleSaveNote"
-          />
-          <n-select
-            v-model:value="currentNote.tag_ids"
-            :options="tagOptions"
-            placeholder="选择标签"
-            multiple
-            clearable
-            class="tag-select"
-            @update:value="handleSaveNote"
-          />
-        </n-space>
       </div>
       <md-editor
         v-model="currentNote.content"
@@ -94,25 +117,105 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { AddCircleSharp, SearchOutline } from '@vicons/ionicons5'
+import { ref, computed, onMounted, h } from 'vue'
+import { AddCircleSharp, SearchOutline, FolderOutline } from '@vicons/ionicons5'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { formatDate } from '../utils/date'
 import { useMessage } from 'naive-ui'
 import type { Note, CreateNoteInput } from '../types/note'
+import type { TreeOption } from 'naive-ui'
 
 const message = useMessage()
 
 // 搜索
 const searchText = ref('')
-const filteredNotes = computed(() => {
-  if (!searchText.value) return notes.value
-  const search = searchText.value.toLowerCase()
+
+// 侧边栏标签页
+const activeTab = ref('notes')
+const selectedCategoryKeys = ref<string[]>([])
+const selectedTagIds = ref<string[]>([])
+
+// 分类树形数据
+const categoryTreeData = computed<TreeOption[]>(() => {
+  return categoryOptions.value.map(category => ({
+    key: category.value,
+    label: category.label,
+    prefix: () => h('span', { class: 'category-icon' }, [
+      h(FolderOutline)
+    ])
+  }))
+})
+
+// 渲染分类标签
+const renderCategoryLabel = (info: { option: TreeOption }) => {
+  return h('div', { class: 'category-label' }, [
+    info.option.prefix?.(),
+    h('span', { class: 'category-name' }, info.option.label as string)
+  ])
+}
+
+// 处理分类选择
+const handleCategorySelect = (keys: string[]) => {
+  selectedCategoryKeys.value = keys
+  filterNotesByCategory()
+}
+
+// 处理标签点击
+const handleTagClick = (tagId: string) => {
+  const index = selectedTagIds.value.indexOf(tagId)
+  if (index > -1) {
+    selectedTagIds.value.splice(index, 1)
+  } else {
+    selectedTagIds.value.push(tagId)
+  }
+  filterNotesByTags()
+}
+
+// 根据分类筛选笔记
+const filterNotesByCategory = () => {
+  if (selectedCategoryKeys.value.length === 0) {
+    return notes.value
+  }
   return notes.value.filter(note => 
-    note.title.toLowerCase().includes(search) || 
-    note.content.toLowerCase().includes(search)
+    note.category && selectedCategoryKeys.value.includes(note.category.id)
   )
+}
+
+// 根据标签筛选笔记
+const filterNotesByTags = () => {
+  if (selectedTagIds.value.length === 0) {
+    return notes.value
+  }
+  return notes.value.filter(note => 
+    note.tags.some(tag => selectedTagIds.value.includes(tag.id))
+  )
+}
+
+// 搜索和筛选笔记
+const filteredNotes = computed(() => {
+  let filtered = notes.value
+
+  // 应用分类筛选
+  if (selectedCategoryKeys.value.length > 0) {
+    filtered = filterNotesByCategory()
+  }
+
+  // 应用标签筛选
+  if (selectedTagIds.value.length > 0) {
+    filtered = filterNotesByTags()
+  }
+
+  // 应用搜索
+  if (searchText.value) {
+    const search = searchText.value.toLowerCase()
+    filtered = filtered.filter(note => 
+      note.title.toLowerCase().includes(search) || 
+      note.content.toLowerCase().includes(search)
+    )
+  }
+
+  return filtered
 })
 
 // 当前编辑的笔记
@@ -318,10 +421,17 @@ onMounted(() => {
   margin: 16px;
 }
 
-.notes-list {
+.sidebar-tabs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-list,
+.tags-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 16px;
 }
 
 .note-item {
@@ -341,17 +451,38 @@ onMounted(() => {
   color: var(--n-primary-color);
 }
 
-.note-title {
-  font-weight: 500;
-  margin-bottom: 4px;
+.category-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.note-meta {
-  font-size: 12px;
-  color: var(--n-text-color-3);
+.category-icon {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  color: var(--n-text-color-3);
+}
+
+.tags-list {
+  padding: 16px;
+}
+
+:deep(.n-tabs-pane) {
+  padding: 0 !important;
+  height: 100%;
+}
+
+:deep(.n-tabs-content) {
+  flex: 1;
+  overflow: hidden;
+}
+
+:deep(.n-tree .n-tree-node-content) {
+  padding: 4px 8px;
+}
+
+:deep(.n-tree .n-tree-node-content:hover) {
+  background-color: var(--n-hover-color);
 }
 
 .editor-container {
