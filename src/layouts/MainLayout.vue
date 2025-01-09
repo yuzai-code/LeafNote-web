@@ -1,45 +1,59 @@
 <template>
-  <n-layout class="main-layout">
-    <n-layout-header class="header" bordered>
-      <div class="header-content">
-        <div class="logo">
-          <h1>LeafNote</h1>
-        </div>
-        <div class="header-right">
-          <n-button-group>
-            <n-button @click="toggleTheme">
-              <template #icon>
-                <moon v-if="isDark" theme="outline" />
-                <sun v-else theme="outline" />
-              </template>
-            </n-button>
-          </n-button-group>
-        </div>
-      </div>
-    </n-layout-header>
-
-    <n-layout has-sider>
-      <n-layout-sider
-        bordered
-        collapse-mode="width"
-        :collapsed-width="64"
-        :width="240"
+  <n-layout has-sider>
+    <!-- 侧边栏 -->
+    <n-layout-sider
+      bordered
+      collapse-mode="width"
+      :collapsed-width="64"
+      :width="240"
+      :collapsed="collapsed"
+      show-trigger
+      @collapse="collapsed = true"
+      @expand="collapsed = false"
+    >
+      <n-menu
         :collapsed="collapsed"
-        show-trigger
-        @collapse="collapsed = true"
-        @expand="collapsed = false"
-      >
-        <n-menu
-          :collapsed="collapsed"
-          :collapsed-width="64"
-          :collapsed-icon-size="22"
-          :options="menuOptions"
-          :value="activeKey"
-          @update:value="handleMenuUpdate"
-        />
-      </n-layout-sider>
+        :collapsed-width="64"
+        :collapsed-icon-size="22"
+        :options="menuOptions"
+        :default-value="activeKey"
+        @update:value="handleMenuClick"
+      />
+    </n-layout-sider>
 
-      <n-layout-content class="content">
+    <!-- 主内容区 -->
+    <n-layout>
+      <!-- 顶部导航 -->
+      <n-layout-header bordered>
+        <div class="header-content">
+          <div class="header-left">
+            <n-breadcrumb>
+              <n-breadcrumb-item>LeafNote</n-breadcrumb-item>
+              <n-breadcrumb-item>{{ currentRoute }}</n-breadcrumb-item>
+            </n-breadcrumb>
+          </div>
+          <div class="header-right">
+            <n-button-group>
+              <n-button secondary type="primary" @click="toggleDark()">
+                <template #icon>
+                  <n-icon>
+                    <SunnySharp v-if="isDark" />
+                    <MoonSharp v-else />
+                  </n-icon>
+                </template>
+              </n-button>
+              <n-button secondary type="primary">
+                <template #icon>
+                  <n-icon><SettingsSharp /></n-icon>
+                </template>
+              </n-button>
+            </n-button-group>
+          </div>
+        </div>
+      </n-layout-header>
+
+      <!-- 内容区 -->
+      <n-layout-content content-style="padding: 24px;">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -51,77 +65,94 @@
 </template>
 
 <script setup lang="ts">
-import { Moon, Sun, Home, DocDetail } from '@icon-park/vue-next'
-import { useOsTheme } from 'naive-ui'
+import { ref, computed, h } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { NIcon } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
+import { SunnySharp, MoonSharp, SettingsSharp, DocumentTextSharp, PricetagsSharp, FolderSharp, HomeSharp } from '@vicons/ionicons5'
+import { useTheme } from '../composables/useTheme'
 
+const route = useRoute()
 const router = useRouter()
 const collapsed = ref(false)
-const activeKey = ref('home')
-const isDark = ref(useOsTheme().value === 'dark')
+const { isDark, toggleDark } = useTheme()
 
-const toggleTheme = () => {
-  isDark.value = !isDark.value
+// 计算当前路由名称
+const currentRoute = computed(() => {
+  const routeNames: Record<string, string> = {
+    home: '首页',
+    notes: '笔记',
+    categories: '分类',
+    tags: '标签'
+  }
+  return routeNames[route.name as string] || '首页'
+})
+
+// 计算当前激活的菜单项
+const activeKey = computed(() => {
+  const name = route.name
+  return name || 'home'
+})
+
+// 渲染图标的辅助函数
+function renderIcon(icon: any) {
+  return () => h(NIcon, null, { default: () => h(icon) })
 }
 
+// 侧边栏菜单配置
 const menuOptions: MenuOption[] = [
   {
     label: '首页',
     key: 'home',
-    icon: renderIcon(Home),
+    icon: renderIcon(HomeSharp)
   },
   {
     label: '笔记',
     key: 'notes',
-    icon: renderIcon(DocDetail),
+    icon: renderIcon(DocumentTextSharp)
   },
   {
     label: '分类',
     key: 'categories',
+    icon: renderIcon(FolderSharp)
+  },
+  {
+    label: '标签',
+    key: 'tags',
+    icon: renderIcon(PricetagsSharp)
   }
 ]
 
-function renderIcon(icon: any) {
-  return () => h(icon)
-}
-
-const handleMenuUpdate = (key: string) => {
-  activeKey.value = key
+// 处理菜单点击
+function handleMenuClick(key: string) {
   router.push({ name: key })
 }
 </script>
 
-<style scoped lang="scss">
-.main-layout {
-  height: 100vh;
+<style scoped>
+.header-content {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.header {
-  height: 64px;
-  padding: 0 24px;
-  
-  .header-content {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    
-    .logo {
-      h1 {
-        margin: 0;
-        font-size: 24px;
-      }
-    }
-  }
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.content {
-  padding: 24px;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
+/* 路由过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .fade-enter-from,

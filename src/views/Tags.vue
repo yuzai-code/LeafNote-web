@@ -1,16 +1,16 @@
 <template>
-  <div class="categories-view">
-    <n-card title="分类管理">
+  <div class="tags-view">
+    <n-card title="标签管理">
       <template #header-extra>
         <n-button type="primary" @click="showCreateModal = true">
-          新建分类
+          新建标签
         </n-button>
       </template>
 
-      <!-- 分类树 -->
+      <!-- 标签树 -->
       <n-tree
         block-line
-        :data="categoriesData"
+        :data="tagsData"
         :render-label="renderLabel"
         :render-prefix="renderPrefix"
         :expand-on-click="true"
@@ -18,8 +18,8 @@
       />
     </n-card>
 
-    <!-- 创建分类对话框 -->
-    <n-modal v-model:show="showCreateModal" preset="dialog" title="新建分类">
+    <!-- 创建标签对话框 -->
+    <n-modal v-model:show="showCreateModal" preset="dialog" title="新建标签">
       <n-form
         ref="formRef"
         :model="formModel"
@@ -28,14 +28,14 @@
         label-width="80"
         require-mark-placement="right-hanging"
       >
-        <n-form-item label="分类名称" path="name">
-          <n-input v-model:value="formModel.name" placeholder="请输入分类名称" />
+        <n-form-item label="标签名称" path="name">
+          <n-input v-model:value="formModel.name" placeholder="请输入标签名称" />
         </n-form-item>
-        <n-form-item label="父分类" path="parentId">
+        <n-form-item label="父标签" path="parentId">
           <n-tree-select
             v-model:value="formModel.parentId"
-            :options="categoriesData"
-            placeholder="请选择父分类（可选）"
+            :options="tagsData"
+            placeholder="请选择父标签（可选）"
             clearable
           />
         </n-form-item>
@@ -47,8 +47,8 @@
       </template>
     </n-modal>
 
-    <!-- 编辑分类对话框 -->
-    <n-modal v-model:show="showEditModal" preset="dialog" title="编辑分类">
+    <!-- 编辑标签对话框 -->
+    <n-modal v-model:show="showEditModal" preset="dialog" title="编辑标签">
       <n-form
         ref="editFormRef"
         :model="editFormModel"
@@ -57,14 +57,14 @@
         label-width="80"
         require-mark-placement="right-hanging"
       >
-        <n-form-item label="分类名称" path="name">
-          <n-input v-model:value="editFormModel.name" placeholder="请输入分类名称" />
+        <n-form-item label="标签名称" path="name">
+          <n-input v-model:value="editFormModel.name" placeholder="请输入标签名称" />
         </n-form-item>
-        <n-form-item label="父分类" path="parentId">
+        <n-form-item label="父标签" path="parentId">
           <n-tree-select
             v-model:value="editFormModel.parentId"
-            :options="categoriesData"
-            placeholder="请选择父分类（可选）"
+            :options="tagsData"
+            placeholder="请选择父标签（可选）"
             clearable
           />
         </n-form-item>
@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import { ref, h, onMounted } from 'vue'
-import { FolderSharp, CreateSharp, TrashSharp } from '@vicons/ionicons5'
+import { PricetagsSharp, CreateSharp, TrashSharp } from '@vicons/ionicons5'
 import type { FormInst, TreeOption } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 
@@ -103,30 +103,30 @@ const editFormModel = ref({
 const rules = {
   name: {
     required: true,
-    message: '请输入分类名称',
+    message: '请输入标签名称',
     trigger: ['blur', 'input']
   }
 }
 
-// 分类数据
-const categoriesData = ref<TreeOption[]>([])
+// 标签数据
+const tagsData = ref<TreeOption[]>([])
 
-// 获取分类列表
-const fetchCategories = async () => {
+// 获取标签列表
+const fetchTags = async () => {
   try {
-    const response = await fetch('/api/v1/categories')
+    const response = await fetch('/api/v1/tags')
     const data = await response.json()
-    categoriesData.value = data
+    tagsData.value = data
   } catch (error) {
-    message.error('获取分类列表失败')
+    message.error('获取标签列表失败')
   }
 }
 
-// 创建分类
+// 创建标签
 const handleCreate = async () => {
   try {
     await formRef.value?.validate()
-    const response = await fetch('/api/v1/categories', {
+    const response = await fetch('/api/v1/tags', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -137,7 +137,7 @@ const handleCreate = async () => {
       message.success('创建成功')
       showCreateModal.value = false
       formModel.value = { name: '', parentId: null }
-      await fetchCategories()
+      await fetchTags()
     } else {
       message.error('创建失败')
     }
@@ -146,11 +146,11 @@ const handleCreate = async () => {
   }
 }
 
-// 编辑分类
+// 编辑标签
 const handleEdit = async () => {
   try {
     await editFormRef.value?.validate()
-    const response = await fetch(`/api/v1/categories/${editFormModel.value.id}`, {
+    const response = await fetch(`/api/v1/tags/${editFormModel.value.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -163,7 +163,7 @@ const handleEdit = async () => {
     if (response.ok) {
       message.success('更新成功')
       showEditModal.value = false
-      await fetchCategories()
+      await fetchTags()
     } else {
       message.error('更新失败')
     }
@@ -172,30 +172,29 @@ const handleEdit = async () => {
   }
 }
 
-// 删除分类
+// 删除标签
 const handleDelete = async (id: string) => {
   try {
-    const response = await fetch(`/api/v1/categories/${id}`, {
+    const response = await fetch(`/api/v1/tags/${id}`, {
       method: 'DELETE'
     })
     if (response.ok) {
       message.success('删除成功')
-      await fetchCategories()
+      await fetchTags()
     } else {
-      const data = await response.json()
-      message.error(data.error || '删除失败')
+      message.error('删除失败')
     }
   } catch (error) {
     message.error('删除失败')
   }
 }
 
-// 渲染分类前缀图标
+// 渲染标签前缀图标
 const renderPrefix = () => {
-  return h(NIcon, null, { default: () => h(FolderSharp) })
+  return h(NIcon, null, { default: () => h(PricetagsSharp) })
 }
 
-// 渲染分类标签（包含编辑和删除按钮）
+// 渲染标签标签（包含编辑和删除按钮）
 const renderLabel = (node: TreeOption) => {
   return h(
     'div',
@@ -244,12 +243,12 @@ const renderLabel = (node: TreeOption) => {
 }
 
 onMounted(() => {
-  fetchCategories()
+  fetchTags()
 })
 </script>
 
 <style scoped>
-.categories-view {
+.tags-view {
   max-width: 800px;
   margin: 0 auto;
 }

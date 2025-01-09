@@ -1,47 +1,40 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
+import { resolve } from 'path'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
       imports: [
         'vue',
         'vue-router',
-        'pinia',
-        '@vueuse/core'
+        {
+          'naive-ui': [
+            'useDialog',
+            'useMessage',
+            'useNotification',
+            'useLoadingBar'
+          ]
+        }
       ],
-      dts: 'src/types/auto-imports.d.ts',
-      dirs: [
-        'src/composables',
-        'src/stores'
-      ],
-      vueTemplate: true,
-      defaultExportByFilename: false,
-      eslintrc: {
-        enabled: true
-      }
+      dts: 'src/types/auto-imports.d.ts'
     }),
     Components({
       resolvers: [NaiveUiResolver()],
-      dts: 'src/types/components.d.ts',
-      dirs: ['src/components', 'src/layouts'],
-      extensions: ['vue'],
-      deep: true
+      dts: 'src/types/components.d.ts'
     })
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': resolve(__dirname, 'src')
     }
   },
   server: {
-    port: 5175,
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
@@ -49,4 +42,4 @@ export default defineConfig(async () => ({
       }
     }
   }
-}))
+})

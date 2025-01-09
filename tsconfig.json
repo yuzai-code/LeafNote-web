@@ -24,20 +24,16 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    },
-
-    /* Type Checking */
-    "types": [
-      "node",
-      "vite/client"
-    ]
+    }
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/types/*.d.ts"
+    "src/types/auto-imports.d.ts",
+    "src/types/components.d.ts",
+    "src/types/md-editor-v3.d.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
