@@ -5,28 +5,35 @@
       <!-- 目录树 -->
       <div class="menu bg-base-100">
         <!-- 新建一级目录按钮 -->
-        <div class="navbar bg-base-100">
-          <div class="flex-1">
-            <span class="text-lg font-bold">笔记目录</span>
-          </div>
-          <div class="flex-none">
-            <button class="btn btn-ghost btn-sm" @click="handleCreateFolder()">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              新建目录
-            </button>
-          </div>
+        <div class="flex items-center justify-between p-2">
+          <span class="text-lg font-bold">笔记目录</span>
+          <button class="btn btn-ghost btn-sm" @click="handleCreateFolder()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            新建目录
+          </button>
         </div>
 
         <template v-for="folder in folderTree" :key="folder.id">
           <!-- 目录项 -->
           <div>
-            <div class="navbar bg-base-100 hover:bg-base-200">
+            <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200">
               <div class="flex-1 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
+                <div class="flex items-center">
+                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                </div>
                 <div v-if="renameTarget?.id === folder.id" class="flex-1">
                   <input 
                     type="text" 
@@ -44,7 +51,7 @@
               </div>
               <div class="flex-none">
                 <div class="dropdown dropdown-end">
-                  <button class="btn btn-square btn-ghost">
+                  <button class="btn btn-ghost btn-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                     </svg>
@@ -60,135 +67,154 @@
             </div>
 
             <!-- 子目录和笔记 -->
-            <div v-show="isExpanded(folder)">
-              <!-- 子目录 -->
-              <template v-if="folder.children?.length">
-                <div v-for="child in folder.children" :key="child.id" class="pl-4">
-                  <div class="navbar bg-base-100 hover:bg-base-200">
-                    <div class="flex-1 flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                      </svg>
-                      <div v-if="renameTarget?.id === child.id" class="flex-1">
-                        <input 
-                          type="text" 
-                          v-model="renameValue" 
-                          class="input input-bordered input-sm w-full"
-                          @keyup.enter="handleRenameConfirm"
-                          @keyup.esc="cancelRename"
-                          @blur="handleRenameConfirm"
-                          :data-rename-id="child.id"
-                        />
-                      </div>
-                      <button v-else class="flex-1 text-left text-base" @click="toggleFolder(child)">
-                        {{ child.name }}
-                      </button>
-                    </div>
-                    <div class="flex-none">
-                      <div class="dropdown dropdown-end">
-                        <button class="btn btn-square btn-ghost">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+            <transition name="expand" @enter="expandEnter" @leave="expandLeave" @after-enter="expandAfterEnter" @after-leave="expandAfterLeave">
+              <div v-show="isExpanded(folder)" class="pl-4 overflow-hidden">
+                <!-- 子目录 -->
+                <template v-if="folder.children?.length">
+                  <div v-for="child in folder.children" :key="child.id">
+                    <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200">
+                      <div class="flex-1 flex items-center gap-2">
+                        <div class="flex items-center">
+                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
-                        </button>
-                        <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
-                          <li><button @click="handleCreateNote(child)">新建笔记</button></li>
-                          <li><button @click="handleCreateFolder(child)">新建子目录</button></li>
-                          <li><button @click="handleRenameFolder(child)">重命名</button></li>
-                          <li><button @click="handleDeleteFolder(child)" class="text-error">删除</button></li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 子目录的笔记列表 -->
-                  <div v-show="isExpanded(child)" v-if="child.notes?.length" class="pl-4">
-                    <div v-for="note in child.notes" :key="note.id" 
-                      class="navbar bg-base-100 hover:bg-base-200 cursor-pointer"
-                      :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
-                      @click="handleNoteClick(note)">
-                      <div class="flex-1">
-                        <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                           </svg>
+                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                          </svg>
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                          </svg>
+                        </div>
+                        <div v-if="renameTarget?.id === child.id" class="flex-1">
                           <input 
                             type="text" 
                             v-model="renameValue" 
-                            class="input input-bordered input-sm w-full max-w-xs"
+                            class="input input-bordered input-sm w-full"
                             @keyup.enter="handleRenameConfirm"
                             @keyup.esc="cancelRename"
                             @blur="handleRenameConfirm"
-                            :data-rename-id="note.id"
-                            @click.stop
+                            :data-rename-id="child.id"
                           />
                         </div>
+                        <button v-else class="flex-1 text-left text-base" @click="toggleFolder(child)">
+                          {{ child.name }}
+                        </button>
                       </div>
                       <div class="flex-none">
                         <div class="dropdown dropdown-end">
-                          <button class="btn btn-square btn-ghost" @click.stop>
+                          <button class="btn btn-ghost btn-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                             </svg>
                           </button>
                           <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
-                            <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
-                            <li><button @click.stop="handleMoveNote(note)">移动</button></li>
-                            <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
+                            <li><button @click="handleCreateNote(child)">新建笔记</button></li>
+                            <li><button @click="handleCreateFolder(child)">新建子目录</button></li>
+                            <li><button @click="handleRenameFolder(child)">重命名</button></li>
+                            <li><button @click="handleDeleteFolder(child)" class="text-error">删除</button></li>
                           </ul>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </template>
 
-              <!-- 笔记列表 -->
-              <div v-if="folder.notes?.length" class="pl-4">
-                <div v-for="note in folder.notes" :key="note.id" 
-                  class="navbar bg-base-100 hover:bg-base-200 cursor-pointer"
-                  :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
-                  @click="handleNoteClick(note)">
-                  <div class="flex-1">
-                    <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      <input 
-                        type="text" 
-                        v-model="renameValue" 
-                        class="input input-bordered input-sm w-full max-w-xs"
-                        @keyup.enter="handleRenameConfirm"
-                        @keyup.esc="cancelRename"
-                        @blur="handleRenameConfirm"
-                        :data-rename-id="note.id"
-                        @click.stop
-                      />
+                    <!-- 子目录的笔记列表 -->
+                    <div v-show="isExpanded(child)" v-if="child.notes?.length" class="pl-4">
+                      <div v-for="note in child.notes" :key="note.id" 
+                        class="flex items-center justify-between py-1 px-2 hover:bg-base-200 cursor-pointer"
+                        :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
+                        @click="handleNoteClick(note)">
+                        <div class="flex-1">
+                          <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <input 
+                              type="text" 
+                              v-model="renameValue" 
+                              class="input input-bordered input-sm w-full max-w-xs"
+                              @keyup.enter="handleRenameConfirm"
+                              @keyup.esc="cancelRename"
+                              @blur="handleRenameConfirm"
+                              :data-rename-id="note.id"
+                              @click.stop
+                            />
+                          </div>
+                          <span v-else class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            {{ note.title }}
+                          </span>
+                        </div>
+                        <div class="flex-none">
+                          <div class="dropdown dropdown-end">
+                            <button class="btn btn-ghost btn-sm" @click.stop>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                              </svg>
+                            </button>
+                            <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                              <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
+                              <li><button @click.stop="handleMoveNote(note)">移动</button></li>
+                              <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <span v-else class="text-lg flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      {{ note.title }}
-                    </span>
                   </div>
-                  <div class="flex-none">
-                    <div class="dropdown dropdown-end">
-                      <button class="btn btn-square btn-ghost" @click.stop>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                </template>
+
+                <!-- 笔记列表 -->
+                <div v-if="folder.notes?.length">
+                  <div v-for="note in folder.notes" :key="note.id" 
+                    class="flex items-center justify-between py-1 px-2 hover:bg-base-200 cursor-pointer"
+                    :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
+                    @click="handleNoteClick(note)">
+                    <div class="flex-1">
+                      <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                      </button>
-                      <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
-                        <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
-                        <li><button @click.stop="handleMoveNote(note)">移动</button></li>
-                        <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
-                      </ul>
+                        <input 
+                          type="text" 
+                          v-model="renameValue" 
+                          class="input input-bordered input-sm w-full max-w-xs"
+                          @keyup.enter="handleRenameConfirm"
+                          @keyup.esc="cancelRename"
+                          @blur="handleRenameConfirm"
+                          :data-rename-id="note.id"
+                          @click.stop
+                        />
+                      </div>
+                      <span v-else class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        {{ note.title }}
+                      </span>
+                    </div>
+                    <div class="flex-none">
+                      <div class="dropdown dropdown-end">
+                        <button class="btn btn-ghost btn-sm" @click.stop>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                          </svg>
+                        </button>
+                        <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                          <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
+                          <li><button @click.stop="handleMoveNote(note)">移动</button></li>
+                          <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </transition>
           </div>
         </template>
       </div>
@@ -616,8 +642,151 @@ const emit = defineEmits<{
   (e: 'select-note', note: Note | null): void
 }>()
 
+// 展开动画相关函数
+const expandEnter = (el: Element) => {
+  const element = el as HTMLElement
+  const height = element.scrollHeight
+  element.style.maxHeight = '0'
+  // 强制重绘
+  element.offsetHeight
+  element.style.maxHeight = height + 'px'
+}
+
+const expandLeave = (el: Element) => {
+  const element = el as HTMLElement
+  const height = element.scrollHeight
+  element.style.maxHeight = height + 'px'
+  // 强制重绘
+  element.offsetHeight
+  element.style.maxHeight = '0'
+}
+
+const expandAfterEnter = (el: Element) => {
+  (el as HTMLElement).style.maxHeight = 'none'
+}
+
+const expandAfterLeave = (el: Element) => {
+  (el as HTMLElement).style.maxHeight = 'none'
+}
+
 onMounted(() => {
   console.log('组件已挂载，开始获取目录数据')
   fetchFolders()
 })
-</script> 
+</script>
+
+<style scoped>
+.folder-tree {
+  padding: 4px;
+  user-select: none;
+}
+
+.folder-item {
+  padding: 1px 0;
+}
+
+.folder-content {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.folder-content:hover {
+  background-color: #f5f5f5;
+}
+
+.folder-content.active {
+  background-color: #e6f7ff;
+}
+
+.folder-name {
+  margin-left: 4px;
+  flex: 1;
+}
+
+.folder-actions {
+  display: none;
+  gap: 4px;
+}
+
+.folder-content:hover .folder-actions {
+  display: flex;
+}
+
+.folder-children {
+  padding-left: 12px;
+}
+
+.note-list {
+  padding-left: 12px;
+}
+
+.note-item {
+  padding: 1px 0;
+}
+
+.note-content {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.note-content:hover {
+  background-color: #f5f5f5;
+}
+
+.note-content.active {
+  background-color: #e6f7ff;
+}
+
+.note-title {
+  margin-left: 4px;
+  flex: 1;
+}
+
+.note-actions {
+  display: none;
+  gap: 4px;
+}
+
+.note-content:hover .note-actions {
+  display: flex;
+}
+
+.rename-input {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 2px 4px;
+  outline: none;
+}
+
+.rename-input:focus {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 1000px;
+  transform: translateY(0);
+}
+</style> 
