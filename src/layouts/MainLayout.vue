@@ -17,11 +17,6 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
         </svg>
       </router-link>
-      <router-link to="/categories" class="btn btn-ghost btn-square">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-        </svg>
-      </router-link>
     </div>
 
     <!-- 中间侧边栏 -->
@@ -29,9 +24,6 @@
       <SidebarFolderTree v-if="route.path === '/notes'" @select-note="handleNoteSelect" />
       <div v-else-if="route.path === '/tags'" class="h-full p-4">
         <h2 class="text-lg font-bold">标签</h2>
-      </div>
-      <div v-else-if="route.path === '/categories'" class="h-full p-4">
-        <h2 class="text-lg font-bold">分类</h2>
       </div>
     </div>
 
@@ -55,7 +47,7 @@ const currentNote = ref<Note | null>(null)
 
 // 根据路由决定是否显示侧边栏
 const showSidebar = computed(() => {
-  return route.path === '/notes' || route.path === '/tags' || route.path === '/categories'
+  return route.path === '/notes' || route.path === '/tags' 
 })
 
 // 处理笔记选择
