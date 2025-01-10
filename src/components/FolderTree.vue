@@ -110,6 +110,7 @@ import FolderSelect from './FolderSelect.vue'
 // 定义事件
 const emit = defineEmits<{
   (e: 'select-note', note: Note | null): void
+  (e: 'note-renamed', note: Note): void
 }>()
 
 // 当前编辑的笔记
@@ -119,7 +120,6 @@ const currentNote = ref<Note | null>(null)
 const folderTree = ref<Category[]>([])
 
 // 重命名相关
-const showRenameModal = ref(false)
 const renameValue = ref('')
 const renameTarget = ref<Category | Note | null>(null)
 
@@ -198,6 +198,24 @@ const handleNoteClick = async (note: Note) => {
     
     // 更新当前笔记
     currentNote.value = data
+
+    // 更新目录树中的笔记标题
+    const findAndUpdateNote = (folders: Category[]) => {
+      for (const folder of folders) {
+        if (folder.notes) {
+          const noteIndex = folder.notes.findIndex(n => n.id === data.id)
+          if (noteIndex !== -1) {
+            folder.notes[noteIndex] = data
+            break
+          }
+        }
+        if (folder.children) {
+          findAndUpdateNote(folder.children)
+        }
+      }
+    }
+    findAndUpdateNote(folderTree.value)
+    
     // 触发选中笔记事件
     emit('select-note', data)
   } catch (error) {
@@ -249,34 +267,6 @@ const getNextNoteName = (folder: Category): string => {
   return `新建笔记${i}`
 }
 
-// 获取下一个可用的笔记文件路径
-const getNextNoteFilePath = async (folder: Category, baseTitle: string): Promise<string> => {
-  try {
-    // 先尝试基本路径
-    let filePath = `${folder.path}/${baseTitle}.md`
-    let counter = 1
-    
-    // 检查文件路径是否存在
-    while (true) {
-      const response = await fetch(`/api/v1/notes/check-path?file_path=${encodeURIComponent(filePath)}`)
-      if (!response.ok) {
-        throw new Error('检查文件路径失败')
-      }
-      const data = await response.json()
-      if (!data.exists) {
-        return filePath
-      }
-      // 如果路径已存在，添加数字后缀
-      filePath = `${folder.path}/${baseTitle}${counter}.md`
-      counter++
-    }
-  } catch (error) {
-    console.error('获取可用文件路径失败:', error)
-    // 如果检查失败，返回一个带时间戳的路径作为后备方案
-    const timestamp = new Date().getTime()
-    return `${folder.path}/${baseTitle}_${timestamp}.md`
-  }
-}
 
 // 创建目录
 const handleCreateFolder = async (parentFolder?: Category) => {
@@ -604,55 +594,11 @@ const handleRenameNote = (note: Note) => {
   })
 }
 
-// 展开动画相关函数
-const expandEnter = (el: Element) => {
-  const element = el as HTMLElement
-  const height = element.scrollHeight
-  element.style.maxHeight = '0'
-  // 强制重绘
-  element.offsetHeight
-  element.style.maxHeight = height + 'px'
-}
 
-const expandLeave = (el: Element) => {
-  const element = el as HTMLElement
-  const height = element.scrollHeight
-  element.style.maxHeight = height + 'px'
-  // 强制重绘
-  element.offsetHeight
-  element.style.maxHeight = '0'
-}
 
-const expandAfterEnter = (el: Element) => {
-  (el as HTMLElement).style.maxHeight = 'none'
-}
-
-const expandAfterLeave = (el: Element) => {
-  (el as HTMLElement).style.maxHeight = 'none'
-}
 
 // 添加 positionDropdown 函数
 const activeDropdown = ref<string | null>(null)
-
-const positionDropdown = (event: MouseEvent, id: string) => {
-  event.stopPropagation()
-  // 如果当前下拉菜单已经打开，则关闭它
-  if (activeDropdown.value === id) {
-    activeDropdown.value = null
-    return
-  }
-  // 否则打开新的下拉菜单
-  activeDropdown.value = id
-  nextTick(() => {
-    const button = event.currentTarget as HTMLElement
-    const dropdown = button.nextElementSibling as HTMLElement
-    if (!dropdown) return
-
-    const rect = button.getBoundingClientRect()
-    dropdown.style.top = `${rect.bottom + 8}px`
-    dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`
-  })
-}
 
 // 添加关闭下拉菜单的函数
 const closeDropdown = () => {
@@ -707,6 +653,7 @@ const handleDropFolder = async (folderId: string, targetFolder: Category) => {
     alert('移动目录失败')
   }
 }
+
 
 onMounted(() => {
   console.log('组件已挂载，开始获取目录数据')

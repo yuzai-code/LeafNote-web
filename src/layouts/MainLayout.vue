@@ -25,7 +25,7 @@
       <div v-else-if="route.path === '/tags'" class="h-full p-4">
         <h2 class="text-lg font-bold">标签</h2>
       </div>
-    </div -->>
+    </div -->
 
     <!-- 主要内容区域 -->
     <div class="flex-1 bg-base-100 p-4 overflow-auto">
@@ -37,23 +37,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import SidebarFolderTree from '../components/SidebarFolderTree.vue'
 import type { Note } from '../types'
 
-const route = useRoute()
+
 const currentNote = ref<Note | null>(null)
 
-// 根据路由决定是否显示侧边栏
-const showSidebar = computed(() => {
-  return route.path === '/notes' || route.path === '/tags' 
-})
 
-// 处理笔记选择
-const handleNoteSelect = (note: Note | null) => {
-  currentNote.value = note
-}
 
 // 处理创建笔记
 const handleCreateNote = () => {

@@ -47,7 +47,7 @@ import { ref } from 'vue'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import FolderTree from '../components/FolderTree.vue'
-import type { Note, Category } from '../types'
+import type { Note } from '../types'
 
 // 当前编辑的笔记
 const currentNote = ref<Note | null>(null)

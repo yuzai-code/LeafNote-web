@@ -10,7 +10,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import FolderTree from './FolderTree.vue'
 import type { Note } from '../types'
 

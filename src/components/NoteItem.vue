@@ -24,7 +24,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
-        {{ note.title }}
+        {{ noteTitle }}
       </span>
     </div>
     <div class="flex-none">
@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import type { Note } from '../types'
 
 const props = defineProps<{
@@ -56,6 +56,12 @@ const props = defineProps<{
   isRenaming: boolean
 }>()
 
+const noteTitle = ref(props.note.title)
+
+watch(() => props.note.title, (newTitle) => {
+  noteTitle.value = newTitle
+})
+
 const emit = defineEmits<{
   (e: 'click', note: Note): void
   (e: 'rename'): void
@@ -63,6 +69,7 @@ const emit = defineEmits<{
   (e: 'delete'): void
   (e: 'rename-confirm', value: string): void
   (e: 'cancel-rename'): void
+  (e: 'renamed', note: Note): void
 }>()
 
 const showDropdown = ref(false)
@@ -88,8 +95,33 @@ const handleDropdownClick = (event: MouseEvent) => {
   }
 }
 
-const handleRenameConfirm = () => {
-  emit('rename-confirm', renameValue.value)
+const handleRenameConfirm = async () => {
+  try {
+    const response = await fetch(`/api/v1/notes/${props.note.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: renameValue.value,
+        content: props.note.content
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error('重命名失败')
+    }
+
+    const updatedNote = await response.json()
+    emit('renamed', updatedNote)
+    emit('rename-confirm', renameValue.value)
+    showDropdown.value = false
+  } catch (error) {
+    console.error('重命名失败:', error)
+    alert('重命名失败')
+    // 还原修改
+    renameValue.value = props.note.title
+  }
 }
 
 // 在组件挂载时添加全局点击事件来关闭下拉菜单
