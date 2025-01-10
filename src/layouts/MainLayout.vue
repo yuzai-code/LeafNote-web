@@ -1,134 +1,77 @@
 <template>
-  <div class="drawer lg:drawer-open">
-    <input id="main-drawer" type="checkbox" class="drawer-toggle" />
-    
-    <!-- 抽屉内容 -->
-    <div class="drawer-content flex flex-col">
-      <!-- 顶部导航栏 -->
-      <div class="navbar bg-base-100 border-b">
-        <div class="flex-none lg:hidden">
-          <label for="main-drawer" class="btn btn-square btn-ghost">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </label>
-        </div>
-        <div class="flex-1">
-          <div class="breadcrumbs text-sm">
-            <ul>
-              <li>LeafNote</li>
-              <li>{{ currentRoute }}</li>
-            </ul>
-          </div>
-        </div>
-        <div class="flex-none">
-          <button class="btn btn-ghost btn-circle" @click="toggleDark">
-            <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          </button>
-          <button class="btn btn-ghost btn-circle">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- 主要内容区域 -->
-      <div class="p-6 flex-1">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
-      </div>
+  <div class="flex h-screen">
+    <!-- 左侧侧边栏 -->
+    <div class="w-16 bg-base-200 flex flex-col items-center py-4 gap-2">
+      <router-link to="/" class="btn btn-ghost btn-square">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      </router-link>
+      <router-link to="/notes" class="btn btn-ghost btn-square">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      </router-link>
+      <router-link to="/tags" class="btn btn-ghost btn-square">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        </svg>
+      </router-link>
+      <router-link to="/categories" class="btn btn-ghost btn-square">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+        </svg>
+      </router-link>
     </div>
 
-    <!-- 侧边栏 -->
-    <div class="drawer-side">
-      <label for="main-drawer" class="drawer-overlay"></label>
-      <ul class="menu p-4 w-60 h-full bg-base-200 text-base-content">
-        <li v-for="item in menuOptions" :key="item.key">
-          <a 
-            :class="{ 'active': activeKey === item.key }"
-            @click="handleMenuClick(item.key)"
-          >
-            <component :is="item.icon" class="w-5 h-5" />
-            {{ item.label }}
-          </a>
-        </li>
-      </ul>
+    <!-- 中间侧边栏 -->
+    <div v-if="showSidebar" class="w-80 bg-base-100 border-r">
+      <component :is="sidebarComponent" @select-note="handleNoteSelect" />
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="flex-1 bg-base-100 p-4">
+      <router-view v-slot="{ Component }">
+        <component :is="Component" :current-note="currentNote" @create-note="handleCreateNote" />
+      </router-view>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useTheme } from '../composables/useTheme'
+import { useRoute } from 'vue-router'
+import SidebarFolderTree from '../components/SidebarFolderTree.vue'
+import type { Note } from '../types'
 
 const route = useRoute()
-const router = useRouter()
-const { isDark, toggleDark } = useTheme()
+const currentNote = ref<Note | null>(null)
 
-// 计算当前路由名称
-const currentRoute = computed(() => {
-  const routeNames: Record<string, string> = {
-    home: '首页',
-    notes: '笔记',
-    categories: '分类',
-    tags: '标签'
-  }
-  return routeNames[route.name as string] || '首页'
+// 根据路由决定是否显示侧边栏和使用哪个组件
+const showSidebar = computed(() => {
+  return route.path === '/notes' || route.path === '/tags' || route.path === '/categories'
 })
 
-// 计算当前激活的菜单项
-const activeKey = computed(() => {
-  const name = route.name
-  return name || 'home'
+const sidebarComponent = computed(() => {
+  switch (route.path) {
+    case '/notes':
+      return SidebarFolderTree
+    case '/tags':
+      return 'div' // 标签侧边栏组件
+    case '/categories':
+      return 'div' // 分类侧边栏组件
+    default:
+      return null
+  }
 })
 
-// 侧边栏菜单配置
-const menuOptions = [
-  {
-    label: '首页',
-    key: 'home',
-    icon: 'i-heroicons-home'
-  },
-  {
-    label: '笔记',
-    key: 'notes',
-    icon: 'i-heroicons-document-text'
-  },
-  {
-    label: '分类',
-    key: 'categories',
-    icon: 'i-heroicons-folder'
-  },
-  {
-    label: '标签',
-    key: 'tags',
-    icon: 'i-heroicons-tag'
-  }
-]
-
-// 处理菜单点击
-function handleMenuClick(key: string) {
-  router.push({ name: key })
-}
-</script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+// 处理笔记选择
+const handleNoteSelect = (note: Note | null) => {
+  currentNote.value = note
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+// 处理创建笔记
+const handleCreateNote = () => {
+  // TODO: 实现创建笔记的逻辑
 }
-</style> 
+</script> 

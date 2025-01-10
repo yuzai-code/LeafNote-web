@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ExampleComponent: typeof import('./../components/ExampleComponent.vue')['default']
+    FolderTree: typeof import('./../components/FolderTree.vue')['default']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     MainLayout: typeof import('./../layouts/MainLayout.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
@@ -50,5 +51,6 @@ declare module 'vue' {
     NTreeSelect: typeof import('naive-ui')['NTreeSelect']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SidebarFolderTree: typeof import('./../components/SidebarFolderTree.vue')['default']
   }
 }
