@@ -18,23 +18,23 @@
         <template v-for="folder in folderTree" :key="folder.id">
           <!-- 目录项 -->
           <div>
-            <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200">
+            <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer" @click="toggleFolder(folder)">
               <div class="flex-1 flex items-center gap-2">
                 <div class="flex items-center">
-                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
-                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
                   </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                   </svg>
                 </div>
-                <div v-if="renameTarget?.id === folder.id" class="flex-1">
+                <div v-if="renameTarget?.id === folder.id" class="flex-1" @click.stop>
                   <input 
                     type="text" 
                     v-model="renameValue" 
@@ -45,11 +45,11 @@
                     :data-rename-id="folder.id"
                   />
                 </div>
-                <button v-else class="flex-1 text-left text-base" @click="toggleFolder(folder)">
+                <span v-else class="flex-1 text-left text-base">
                   {{ folder.name }}
-                </button>
+                </span>
               </div>
-              <div class="flex-none">
+              <div class="flex-none" @click.stop>
                 <div class="dropdown dropdown-end">
                   <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, folder.id)">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
@@ -74,23 +74,23 @@
                 <!-- 子目录 -->
                 <template v-if="folder.children?.length">
                   <div v-for="child in folder.children" :key="child.id">
-                    <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200">
+                    <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer" @click="toggleFolder(child)">
                       <div class="flex-1 flex items-center gap-2">
                         <div class="flex items-center">
-                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
-                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                           </svg>
-                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
                           </svg>
-                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                           </svg>
                         </div>
-                        <div v-if="renameTarget?.id === child.id" class="flex-1">
+                        <div v-if="renameTarget?.id === child.id" class="flex-1" @click.stop>
                           <input 
                             type="text" 
                             v-model="renameValue" 
@@ -101,11 +101,11 @@
                             :data-rename-id="child.id"
                           />
                         </div>
-                        <button v-else class="flex-1 text-left text-base" @click="toggleFolder(child)">
+                        <span v-else class="flex-1 text-left text-base">
                           {{ child.name }}
-                        </button>
+                        </span>
                       </div>
-                      <div class="flex-none">
+                      <div class="flex-none" @click.stop>
                         <div class="dropdown dropdown-end">
                           <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, child.id)">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
@@ -127,7 +127,7 @@
                     <!-- 子目录的笔记列表 -->
                     <div v-show="isExpanded(child)" v-if="child.notes?.length" class="pl-4">
                       <div v-for="note in child.notes" :key="note.id" 
-                        class="flex items-center justify-between py-1 px-2 hover:bg-base-200 cursor-pointer"
+                        class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
                         :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
                         @click="handleNoteClick(note)">
                         <div class="flex-1">
@@ -177,7 +177,7 @@
                 <!-- 笔记列表 -->
                 <div v-if="folder.notes?.length">
                   <div v-for="note in folder.notes" :key="note.id" 
-                    class="flex items-center justify-between py-1 px-2 hover:bg-base-200 cursor-pointer"
+                    class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
                     :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
                     @click="handleNoteClick(note)">
                     <div class="flex-1">
