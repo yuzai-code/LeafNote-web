@@ -7,7 +7,9 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    DropdownMenu: typeof import('./../components/DropdownMenu.vue')['default']
     ExampleComponent: typeof import('./../components/ExampleComponent.vue')['default']
+    FolderItem: typeof import('./../components/FolderItem.vue')['default']
     FolderTree: typeof import('./../components/FolderTree.vue')['default']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     MainLayout: typeof import('./../layouts/MainLayout.vue')['default']
@@ -40,6 +42,7 @@ declare module 'vue' {
     NMenu: typeof import('naive-ui')['NMenu']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NModal: typeof import('naive-ui')['NModal']
+    NoteItem: typeof import('./../components/NoteItem.vue')['default']
     NSelect: typeof import('naive-ui')['NSelect']
     NSpace: typeof import('naive-ui')['NSpace']
     NStatistic: typeof import('naive-ui')['NStatistic']

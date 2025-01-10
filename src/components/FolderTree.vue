@@ -16,240 +16,73 @@
         </div>
 
         <template v-for="folder in folderTree" :key="folder.id">
-          <!-- 目录项 -->
-          <div>
-            <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer" @click="toggleFolder(folder)">
-              <div class="flex-1 flex items-center gap-2">
-                <div class="flex items-center">
-                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                  <svg v-if="isExpanded(folder)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
-                  </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
-                </div>
-                <div v-if="renameTarget?.id === folder.id" class="flex-1" @click.stop>
-                  <input 
-                    type="text" 
-                    v-model="renameValue" 
-                    class="input input-bordered input-sm w-full"
-                    @keyup.enter="handleRenameConfirm"
-                    @keyup.esc="cancelRename"
-                    @blur="handleRenameConfirm"
-                    :data-rename-id="folder.id"
+          <FolderItem
+            :folder="folder"
+            :is-expanded="isExpanded(folder)"
+            :is-renaming="renameTarget?.id === folder.id"
+            @toggle="toggleFolder"
+            @create-note="handleCreateNote(folder)"
+            @create-folder="handleCreateFolder(folder)"
+            @rename="handleRenameFolder(folder)"
+            @delete="handleDeleteFolder(folder)"
+            @rename-confirm="handleRenameConfirm"
+            @cancel-rename="cancelRename"
+          >
+            <!-- 子目录和笔记 -->
+            <template v-if="folder.children?.length">
+              <FolderItem
+                v-for="child in folder.children"
+                :key="child.id"
+                :folder="child"
+                :is-expanded="isExpanded(child)"
+                :is-renaming="renameTarget?.id === child.id"
+                @toggle="toggleFolder"
+                @create-note="handleCreateNote(child)"
+                @create-folder="handleCreateFolder(child)"
+                @rename="handleRenameFolder(child)"
+                @delete="handleDeleteFolder(child)"
+                @rename-confirm="handleRenameConfirm"
+                @cancel-rename="cancelRename"
+              >
+                <!-- 子目录的笔记列表 -->
+                <div v-if="child.notes?.length">
+                  <NoteItem
+                    v-for="note in child.notes"
+                    :key="note.id"
+                    :note="note"
+                    :is-active="currentNote?.id === note.id"
+                    :is-renaming="renameTarget?.id === note.id"
+                    @click="handleNoteClick"
+                    @rename="handleRenameNote(note)"
+                    @move="handleMoveNote(note)"
+                    @delete="handleDeleteNote(note)"
+                    @rename-confirm="handleRenameConfirm"
+                    @cancel-rename="cancelRename"
                   />
                 </div>
-                <span v-else class="flex-1 text-left text-base">
-                  {{ folder.name }}
-                </span>
-              </div>
-              <div class="flex-none" @click.stop>
-                <div class="dropdown dropdown-end">
-                  <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, folder.id)">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-                    </svg>
-                  </button>
-                  <ul v-if="activeDropdown === folder.id" 
-                      class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
-                      @click.stop>
-                    <li><button @click="handleCreateNote(folder)">新建笔记</button></li>
-                    <li><button @click="handleCreateFolder(folder)">新建子目录</button></li>
-                    <li><button @click="handleRenameFolder(folder)">重命名</button></li>
-                    <li><button @click="handleDeleteFolder(folder)" class="text-error">删除</button></li>
-                  </ul>
-                </div>
-              </div>
+              </FolderItem>
+            </template>
+
+            <!-- 笔记列表 -->
+            <div v-if="folder.notes?.length">
+              <NoteItem
+                v-for="note in folder.notes"
+                :key="note.id"
+                :note="note"
+                :is-active="currentNote?.id === note.id"
+                :is-renaming="renameTarget?.id === note.id"
+                @click="handleNoteClick"
+                @rename="handleRenameNote(note)"
+                @move="handleMoveNote(note)"
+                @delete="handleDeleteNote(note)"
+                @rename-confirm="handleRenameConfirm"
+                @cancel-rename="cancelRename"
+              />
             </div>
-
-            <!-- 子目录和笔记 -->
-            <transition name="expand" @enter="expandEnter" @leave="expandLeave" @after-enter="expandAfterEnter" @after-leave="expandAfterLeave">
-              <div v-show="isExpanded(folder)" class="pl-4 overflow-hidden">
-                <!-- 子目录 -->
-                <template v-if="folder.children?.length">
-                  <div v-for="child in folder.children" :key="child.id">
-                    <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer" @click="toggleFolder(child)">
-                      <div class="flex-1 flex items-center gap-2">
-                        <div class="flex items-center">
-                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                          </svg>
-                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                          </svg>
-                          <svg v-if="isExpanded(child)" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
-                          </svg>
-                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                          </svg>
-                        </div>
-                        <div v-if="renameTarget?.id === child.id" class="flex-1" @click.stop>
-                          <input 
-                            type="text" 
-                            v-model="renameValue" 
-                            class="input input-bordered input-sm w-full"
-                            @keyup.enter="handleRenameConfirm"
-                            @keyup.esc="cancelRename"
-                            @blur="handleRenameConfirm"
-                            :data-rename-id="child.id"
-                          />
-                        </div>
-                        <span v-else class="flex-1 text-left text-base">
-                          {{ child.name }}
-                        </span>
-                      </div>
-                      <div class="flex-none" @click.stop>
-                        <div class="dropdown dropdown-end">
-                          <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, child.id)">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-                            </svg>
-                          </button>
-                          <ul v-if="activeDropdown === child.id" 
-                              class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
-                              @click.stop>
-                            <li><button @click="handleCreateNote(child)">新建笔记</button></li>
-                            <li><button @click="handleCreateFolder(child)">新建子目录</button></li>
-                            <li><button @click="handleRenameFolder(child)">重命名</button></li>
-                            <li><button @click="handleDeleteFolder(child)" class="text-error">删除</button></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- 子目录的笔记列表 -->
-                    <div v-show="isExpanded(child)" v-if="child.notes?.length" class="pl-4">
-                      <div v-for="note in child.notes" :key="note.id" 
-                        class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
-                        :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
-                        @click="handleNoteClick(note)">
-                        <div class="flex-1">
-                          <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            <input 
-                              type="text" 
-                              v-model="renameValue" 
-                              class="input input-bordered input-sm w-full max-w-xs"
-                              @keyup.enter="handleRenameConfirm"
-                              @keyup.esc="cancelRename"
-                              @blur="handleRenameConfirm"
-                              :data-rename-id="note.id"
-                              @click.stop
-                            />
-                          </div>
-                          <span v-else class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            {{ note.title }}
-                          </span>
-                        </div>
-                        <div class="flex-none">
-                          <div class="dropdown dropdown-end">
-                            <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, note.id)">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-                              </svg>
-                            </button>
-                            <ul v-if="activeDropdown === note.id" 
-                                class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
-                                @click.stop>
-                              <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
-                              <li><button @click.stop="handleMoveNote(note)">移动</button></li>
-                              <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- 笔记列表 -->
-                <div v-if="folder.notes?.length">
-                  <div v-for="note in folder.notes" :key="note.id" 
-                    class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
-                    :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
-                    @click="handleNoteClick(note)">
-                    <div class="flex-1">
-                      <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        <input 
-                          type="text" 
-                          v-model="renameValue" 
-                          class="input input-bordered input-sm w-full max-w-xs"
-                          @keyup.enter="handleRenameConfirm"
-                          @keyup.esc="cancelRename"
-                          @blur="handleRenameConfirm"
-                          :data-rename-id="note.id"
-                          @click.stop
-                        />
-                      </div>
-                      <span v-else class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        {{ note.title }}
-                      </span>
-                    </div>
-                    <div class="flex-none">
-                      <div class="dropdown dropdown-end">
-                        <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, note.id)">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-                          </svg>
-                        </button>
-                        <ul v-if="activeDropdown === note.id" 
-                            class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
-                            @click.stop>
-                          <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
-                          <li><button @click.stop="handleMoveNote(note)">移动</button></li>
-                          <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </transition>
-          </div>
+          </FolderItem>
         </template>
       </div>
     </div>
-
-    <!-- 重命名对话框 -->
-    <dialog :class="{ 'modal modal-open': showRenameModal }" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">重命名</h3>
-        <div class="form-control">
-          <input 
-            type="text" 
-            v-model="renameValue" 
-            class="input input-bordered" 
-            placeholder="请输入新名称"
-            @keyup.enter="handleRenameConfirm"
-          />
-        </div>
-        <div class="modal-action">
-          <button class="btn" @click="showRenameModal = false">取消</button>
-          <button class="btn btn-primary" @click="handleRenameConfirm">确定</button>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button @click="showRenameModal = false">关闭</button>
-      </form>
-    </dialog>
 
     <!-- 移动笔记对话框 -->
     <dialog :class="{ 'modal modal-open': showMoveModal }" class="modal">
@@ -279,6 +112,8 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import type { Note, Category } from '../types'
+import NoteItem from './NoteItem.vue'
+import FolderItem from './FolderItem.vue'
 
 // 当前编辑的笔记
 const currentNote = ref<Note | null>(null)
@@ -345,9 +180,23 @@ const handleFolderClick = async (folder: Category) => {
 }
 
 // 处理笔记点击
-const handleNoteClick = (note: Note) => {
-  currentNote.value = note
-  emit('select-note', note)
+const handleNoteClick = async (note: Note) => {
+  try {
+    const response = await fetch(`/api/v1/notes/${note.id}`)
+    if (!response.ok) {
+      throw new Error('获取笔记内容失败')
+    }
+    const data = await response.json()
+    console.log('获取到的笔记内容:', data)
+    
+    // 更新当前笔记
+    currentNote.value = data
+    // 触发选中笔记事件
+    emit('select-note', data)
+  } catch (error) {
+    console.error('获取笔记内容失败:', error)
+    alert('获取笔记内容失败')
+  }
 }
 
 // 获取下一个可用的目录名
