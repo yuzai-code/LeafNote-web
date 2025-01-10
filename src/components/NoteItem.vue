@@ -1,7 +1,9 @@
 <template>
   <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
        :class="{ 'bg-primary text-primary-content': isActive }"
-       @click="$emit('click', note)">
+       @click="$emit('click', note)"
+       draggable="true"
+       @dragstart="handleDragStart">
     <div class="flex-1">
       <div v-if="isRenaming" class="flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,6 +100,15 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', closeDropdown)
 })
+
+const handleDragStart = (event: DragEvent) => {
+  if (!event.dataTransfer) return
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('application/json', JSON.stringify({
+    type: 'note',
+    id: props.note.id
+  }))
+}
 </script>
 
 <style scoped>

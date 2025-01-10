@@ -1,7 +1,14 @@
 <template>
   <div>
     <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer" 
-         @click="$emit('toggle', folder)">
+         @click="$emit('toggle', folder)"
+         draggable="true"
+         @dragstart="handleDragStart"
+         @dragover.prevent="handleDragOver"
+         @drop.prevent="handleDrop"
+         @dragenter.prevent="handleDragEnter"
+         @dragleave.prevent="handleDragLeave"
+         :class="{ 'drag-over': isDragOver }">
       <div class="flex-1 flex items-center gap-2">
         <div class="flex items-center">
           <svg v-if="isExpanded" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -45,6 +52,7 @@
             <li><button @click="$emit('create-note')">新建笔记</button></li>
             <li><button @click="$emit('create-folder')">新建子目录</button></li>
             <li><button @click="$emit('rename')">重命名</button></li>
+            <li><button @click="$emit('move')">移动</button></li>
             <li><button @click="$emit('delete')" class="text-error">删除</button></li>
           </ul>
         </div>
@@ -75,9 +83,12 @@ const emit = defineEmits<{
   (e: 'create-note'): void
   (e: 'create-folder'): void
   (e: 'rename'): void
+  (e: 'move'): void
   (e: 'delete'): void
   (e: 'rename-confirm', value: string): void
   (e: 'cancel-rename'): void
+  (e: 'drop-note', noteId: string): void
+  (e: 'drop-folder', folderId: string): void
 }>()
 
 const showDropdown = ref(false)
@@ -135,6 +146,49 @@ const expandAfterLeave = (el: Element) => {
   (el as HTMLElement).style.maxHeight = 'none'
 }
 
+const isDragOver = ref(false)
+
+const handleDragStart = (event: DragEvent) => {
+  if (!event.dataTransfer) return
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('application/json', JSON.stringify({
+    type: 'folder',
+    id: props.folder.id
+  }))
+}
+
+const handleDragOver = (event: DragEvent) => {
+  if (!event.dataTransfer) return
+  event.dataTransfer.dropEffect = 'move'
+}
+
+const handleDragEnter = () => {
+  isDragOver.value = true
+}
+
+const handleDragLeave = () => {
+  isDragOver.value = false
+}
+
+const handleDrop = (event: DragEvent) => {
+  isDragOver.value = false
+  if (!event.dataTransfer) return
+
+  const data = event.dataTransfer.getData('application/json')
+  if (!data) return
+
+  try {
+    const draggedItem = JSON.parse(data)
+    if (draggedItem.type === 'note') {
+      emit('drop-note', draggedItem.id)
+    } else if (draggedItem.type === 'folder' && draggedItem.id !== props.folder.id) {
+      emit('drop-folder', draggedItem.id)
+    }
+  } catch (error) {
+    console.error('解析拖拽数据失败:', error)
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', closeDropdown)
 })
@@ -183,5 +237,10 @@ onUnmounted(() => {
   opacity: 1;
   max-height: 1000px;
   transform: translateY(0);
+}
+
+.drag-over {
+  background-color: var(--base-300);
+  border: 2px dashed var(--primary);
 }
 </style> 

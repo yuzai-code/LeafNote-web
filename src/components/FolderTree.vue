@@ -24,9 +24,12 @@
             @create-note="handleCreateNote(folder)"
             @create-folder="handleCreateFolder(folder)"
             @rename="handleRenameFolder(folder)"
+            @move="handleMoveFolder($event, folder)"
             @delete="handleDeleteFolder(folder)"
             @rename-confirm="handleRenameConfirm"
             @cancel-rename="cancelRename"
+            @drop-note="(noteId) => handleDropNote(noteId, folder)"
+            @drop-folder="(folderId) => handleDropFolder(folderId, folder)"
           >
             <!-- 子目录和笔记 -->
             <template v-if="folder.children?.length">
@@ -40,9 +43,12 @@
                 @create-note="handleCreateNote(child)"
                 @create-folder="handleCreateFolder(child)"
                 @rename="handleRenameFolder(child)"
+                @move="handleMoveFolder($event, folder)"
                 @delete="handleDeleteFolder(child)"
                 @rename-confirm="handleRenameConfirm"
                 @cancel-rename="cancelRename"
+                @drop-note="(noteId) => handleDropNote(noteId, child)"
+                @drop-folder="(folderId) => handleDropFolder(folderId, child)"
               >
                 <!-- 子目录的笔记列表 -->
                 <div v-if="child.notes?.length">
@@ -54,7 +60,7 @@
                     :is-renaming="renameTarget?.id === note.id"
                     @click="handleNoteClick"
                     @rename="handleRenameNote(note)"
-                    @move="handleMoveNote(note)"
+                    @move="handleMoveNote(note, child)"
                     @delete="handleDeleteNote(note)"
                     @rename-confirm="handleRenameConfirm"
                     @cancel-rename="cancelRename"
@@ -73,7 +79,7 @@
                 :is-renaming="renameTarget?.id === note.id"
                 @click="handleNoteClick"
                 @rename="handleRenameNote(note)"
-                @move="handleMoveNote(note)"
+                @move="handleMoveNote(note, folder)"
                 @delete="handleDeleteNote(note)"
                 @rename-confirm="handleRenameConfirm"
                 @cancel-rename="cancelRename"
@@ -84,28 +90,13 @@
       </div>
     </div>
 
-    <!-- 移动笔记对话框 -->
-    <dialog :class="{ 'modal modal-open': showMoveModal }" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">移动到</h3>
-        <ul class="menu bg-base-200 rounded-box">
-          <li v-for="folder in folderTree" :key="folder.id">
-            <button @click="handleMoveConfirm(folder)">{{ folder.name }}</button>
-            <ul v-if="folder.children?.length">
-              <li v-for="child in folder.children" :key="child.id">
-                <button @click="handleMoveConfirm(child)">{{ child.name }}</button>
-              </li>
-            </ul>
-          </li>
-        </ul>
-        <div class="modal-action">
-          <button class="btn" @click="showMoveModal = false">取消</button>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button @click="showMoveModal = false">关闭</button>
-      </form>
-    </dialog>
+    <!-- 移动对话框 -->
+    <FolderSelect
+      v-model="showMoveModal"
+      :folders="folderTree"
+      :current-folder="moveSourceFolder"
+      @select="handleMoveConfirm"
+    />
   </div>
 </template>
 
@@ -114,6 +105,7 @@ import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import type { Note, Category } from '../types'
 import NoteItem from './NoteItem.vue'
 import FolderItem from './FolderItem.vue'
+import FolderSelect from './FolderSelect.vue'
 
 // 当前编辑的笔记
 const currentNote = ref<Note | null>(null)
@@ -128,7 +120,8 @@ const renameTarget = ref<Category | Note | null>(null)
 
 // 移动笔记相关
 const showMoveModal = ref(false)
-const moveTarget = ref<Note | null>(null)
+const moveTarget = ref<{ type: 'note' | 'folder', item: Note | Category } | null>(null)
+const moveSourceFolder = ref<Category | undefined>(undefined)
 
 // 展开的目录ID集合
 const expandedFolders = ref<Set<string>>(new Set())
@@ -437,8 +430,15 @@ const handleRenameConfirm = async () => {
 }
 
 // 移动笔记
-const handleMoveNote = (note: Note) => {
-  moveTarget.value = note
+const handleMoveNote = (note: Note, sourceFolder: Category) => {
+  moveTarget.value = { type: 'note', item: note }
+  moveSourceFolder.value = sourceFolder
+  showMoveModal.value = true
+}
+
+const handleMoveFolder = (folder: Category, sourceFolder: Category) => {
+  moveTarget.value = { type: 'folder', item: folder }
+  moveSourceFolder.value = sourceFolder
   showMoveModal.value = true
 }
 
@@ -446,29 +446,44 @@ const handleMoveConfirm = async (targetFolder: Category) => {
   if (!moveTarget.value) return
 
   try {
-    const response = await fetch(`/api/v1/notes/${moveTarget.value.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        category_id: targetFolder.id
+    if (moveTarget.value.type === 'note') {
+      const note = moveTarget.value.item as Note
+      const response = await fetch(`/api/v1/notes/${note.id}/move`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          category_id: targetFolder.id
+        })
       })
-    })
-    if (response.ok) {
-      // 刷新目标目录的笔记列表
-      await handleFolderClick(targetFolder)
-      
-      // 如果源目录和目标目录不同，也刷新源目录的笔记列表
-      const sourceFolder = findFolderByNoteId(folderTree.value, moveTarget.value.id)
-      if (sourceFolder && sourceFolder.id !== targetFolder.id) {
-        await handleFolderClick(sourceFolder)
+
+      if (!response.ok) {
+        throw new Error('移动笔记失败')
       }
-      
-      showMoveModal.value = false
     } else {
-      alert('移动失败')
+      const folder = moveTarget.value.item as Category
+      const response = await fetch(`/api/v1/categories/${folder.id}/move`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          parent_id: targetFolder.id
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('移动目录失败')
+      }
     }
+
+    // 刷新目录树
+    await fetchFolders()
+    // 重置状态
+    moveTarget.value = null
+    moveSourceFolder.value = undefined
+    showMoveModal.value = false
   } catch (error) {
     console.error('移动失败:', error)
     alert('移动失败')
@@ -632,6 +647,55 @@ const positionDropdown = (event: MouseEvent, id: string) => {
 // 添加关闭下拉菜单的函数
 const closeDropdown = () => {
   activeDropdown.value = null
+}
+
+// 添加拖拽处理函数
+const handleDropNote = async (noteId: string, targetFolder: Category) => {
+  try {
+    const response = await fetch(`/api/v1/notes/${noteId}/move`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        category_id: targetFolder.id
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error('移动笔记失败')
+    }
+
+    // 刷新目录树
+    await fetchFolders()
+  } catch (error) {
+    console.error('移动笔记失败:', error)
+    alert('移动笔记失败')
+  }
+}
+
+const handleDropFolder = async (folderId: string, targetFolder: Category) => {
+  try {
+    const response = await fetch(`/api/v1/categories/${folderId}/move`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        parent_id: targetFolder.id
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error('移动目录失败')
+    }
+
+    // 刷新目录树
+    await fetchFolders()
+  } catch (error) {
+    console.error('移动目录失败:', error)
+    alert('移动目录失败')
+  }
 }
 
 onMounted(() => {

@@ -10,6 +10,7 @@ declare module 'vue' {
     DropdownMenu: typeof import('./../components/DropdownMenu.vue')['default']
     ExampleComponent: typeof import('./../components/ExampleComponent.vue')['default']
     FolderItem: typeof import('./../components/FolderItem.vue')['default']
+    FolderSelect: typeof import('./../components/FolderSelect.vue')['default']
     FolderTree: typeof import('./../components/FolderTree.vue')['default']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     MainLayout: typeof import('./../layouts/MainLayout.vue')['default']
