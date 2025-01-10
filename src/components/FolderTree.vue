@@ -359,10 +359,12 @@ const handleCreateFolder = async (parentFolder?: Category) => {
     
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.message || '创建目录失败')
+      throw new Error(error.error || '创建目录失败')
     }
     
     const newFolder = await response.json()
+    // 保存父目录信息
+    newFolder.parent_id = parentFolder?.id
     await fetchFolders()
     
     // 自动展开父目录
@@ -476,18 +478,20 @@ const handleRenameConfirm = async () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: renameValue.value
+          name: renameValue.value,
+          parent_id: renameTarget.value.parent_id // 保留父目录ID
         })
       })
       if (!response.ok) {
-        alert('重命名失败')
+        const error = await response.json()
+        throw new Error(error.error || '重命名失败')
       }
     }
     await fetchFolders()
     cancelRename()
   } catch (error) {
     console.error('重命名失败:', error)
-    alert('重命名失败')
+    alert(error instanceof Error ? error.message : '重命名失败')
   }
 }
 
