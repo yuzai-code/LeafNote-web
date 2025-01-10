@@ -366,6 +366,53 @@ const getNextFolderName = (currentFolder?: Category): string => {
   return `未命名${i}`
 }
 
+// 获取下一个可用的笔记名称
+const getNextNoteName = (folder: Category): string => {
+  const usedNames = new Set<string>()
+  
+  // 收集当前目录下已使用的笔记名称
+  for (const note of folder.notes || []) {
+    usedNames.add(note.title)
+  }
+  
+  // 查找可用的名称
+  if (!usedNames.has('新建笔记')) return '新建笔记'
+  let i = 1
+  while (usedNames.has(`新建笔记${i}`)) {
+    i++
+  }
+  return `新建笔记${i}`
+}
+
+// 获取下一个可用的笔记文件路径
+const getNextNoteFilePath = async (folder: Category, baseTitle: string): Promise<string> => {
+  try {
+    // 先尝试基本路径
+    let filePath = `${folder.path}/${baseTitle}.md`
+    let counter = 1
+    
+    // 检查文件路径是否存在
+    while (true) {
+      const response = await fetch(`/api/v1/notes/check-path?file_path=${encodeURIComponent(filePath)}`)
+      if (!response.ok) {
+        throw new Error('检查文件路径失败')
+      }
+      const data = await response.json()
+      if (!data.exists) {
+        return filePath
+      }
+      // 如果路径已存在，添加数字后缀
+      filePath = `${folder.path}/${baseTitle}${counter}.md`
+      counter++
+    }
+  } catch (error) {
+    console.error('获取可用文件路径失败:', error)
+    // 如果检查失败，返回一个带时间戳的路径作为后备方案
+    const timestamp = new Date().getTime()
+    return `${folder.path}/${baseTitle}_${timestamp}.md`
+  }
+}
+
 // 创建目录
 const handleCreateFolder = async (parentFolder?: Category) => {
   console.log('创建目录, 父目录:', parentFolder)
@@ -423,8 +470,7 @@ const handleCreateFolder = async (parentFolder?: Category) => {
 // 创建笔记
 const handleCreateNote = async (folder: Category) => {
   console.log('创建笔记, 所在目录:', folder)
-  const title = prompt('请输入笔记标题')
-  if (!title) return
+  const defaultTitle = getNextNoteName(folder)
 
   try {
     const response = await fetch('/api/v1/notes', {
@@ -433,21 +479,33 @@ const handleCreateNote = async (folder: Category) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        title,
+        title: defaultTitle,
         content: '',
-        category_id: folder.id
+        category_id: folder.id,
+        file_path: `${folder.path}/${defaultTitle}.md`
       })
     })
     
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.message || '创建笔记失败')
+      throw new Error(error.error || '创建笔记失败')
     }
 
     const note = await response.json()
     currentNote.value = note
     emit('select-note', note)
-    await fetchFolders()
+    
+    // 刷新当前目录的笔记列表
+    await handleFolderClick(folder)
+    
+    // 直接进入重命名状态
+    renameTarget.value = note
+    renameValue.value = defaultTitle
+    nextTick(() => {
+      const input = document.querySelector(`input[data-rename-id="${note.id}"]`) as HTMLInputElement
+      input?.focus()
+      input?.select()
+    })
   } catch (error) {
     console.error('创建笔记失败:', error)
     alert(error instanceof Error ? error.message : '创建笔记失败')
@@ -541,7 +599,15 @@ const handleMoveConfirm = async (targetFolder: Category) => {
       })
     })
     if (response.ok) {
-      await fetchFolders()
+      // 刷新目标目录的笔记列表
+      await handleFolderClick(targetFolder)
+      
+      // 如果源目录和目标目录不同，也刷新源目录的笔记列表
+      const sourceFolder = findFolderByNoteId(folderTree.value, moveTarget.value.id)
+      if (sourceFolder && sourceFolder.id !== targetFolder.id) {
+        await handleFolderClick(sourceFolder)
+      }
+      
       showMoveModal.value = false
     } else {
       alert('移动失败')
@@ -550,6 +616,20 @@ const handleMoveConfirm = async (targetFolder: Category) => {
     console.error('移动失败:', error)
     alert('移动失败')
   }
+}
+
+// 根据笔记 ID 查找所在的目录
+const findFolderByNoteId = (folders: Category[], noteId: string): Category | null => {
+  for (const folder of folders) {
+    if (folder.notes?.some(note => note.id === noteId)) {
+      return folder
+    }
+    if (folder.children) {
+      const found = findFolderByNoteId(folder.children, noteId)
+      if (found) return found
+    }
+  }
+  return null
 }
 
 // 删除目录
