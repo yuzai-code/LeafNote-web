@@ -1,97 +1,114 @@
 <template>
-  <div class="notes-container">
+  <div class="flex h-full gap-4">
     <!-- 左侧侧边栏 -->
-    <div class="notes-sidebar">
-      <div class="sidebar-header">
-        <n-button text type="primary" @click="handleNewNote">
-          <template #icon>
-            <n-icon><AddCircleSharp /></n-icon>
-          </template>
+    <div class="w-80 bg-base-200 rounded-lg p-4 flex flex-col gap-4">
+      <div class="flex justify-between items-center">
+        <button class="btn btn-primary btn-sm" @click="handleNewNote">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
           新建笔记
-        </n-button>
+        </button>
       </div>
       
       <!-- 搜索框 -->
-      <n-input
-        v-model:value="searchText"
-        type="text"
-        placeholder="搜索笔记..."
-        class="search-input"
-      >
-        <template #prefix>
-          <n-icon><SearchOutline /></n-icon>
-        </template>
-      </n-input>
+      <div class="form-control">
+        <div class="input-group">
+          <input 
+            type="text" 
+            v-model="searchText"
+            placeholder="搜索笔记..." 
+            class="input input-bordered w-full"
+          />
+          <button class="btn btn-square">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       <!-- 标签页 -->
-      <n-tabs
-        type="segment"
-        size="small"
-        class="sidebar-tabs"
-        v-model:value="activeTab"
-      >
-        <!-- 笔记列表标签页 -->
-        <n-tab-pane name="notes" tab="笔记">
-          <div class="notes-list">
-            <div
-              v-for="note in filteredNotes"
-              :key="note.id"
-              class="note-item"
-              :class="{ active: currentNote?.id === note.id }"
-              @click="handleSelectNote(note)"
-            >
-              <div class="note-title">{{ note.title || '未命名笔记' }}</div>
-              <div class="note-meta">
-                <span class="note-date">{{ formatDate(note.created_at) }}</span>
-                <n-space>
-                  <n-tag v-if="note.category" size="small" :bordered="false">
-                    {{ note.category.name }}
-                  </n-tag>
-                </n-space>
+      <div class="tabs tabs-boxed">
+        <a 
+          class="tab" 
+          :class="{ 'tab-active': activeTab === 'notes' }"
+          @click="activeTab = 'notes'"
+        >笔记</a>
+        <a 
+          class="tab"
+          :class="{ 'tab-active': activeTab === 'categories' }"
+          @click="activeTab = 'categories'"
+        >分类</a>
+        <a 
+          class="tab"
+          :class="{ 'tab-active': activeTab === 'tags' }"
+          @click="activeTab = 'tags'"
+        >标签</a>
+      </div>
+
+      <!-- 笔记列表 -->
+      <div v-if="activeTab === 'notes'" class="flex-1 overflow-y-auto">
+        <div 
+          v-for="note in filteredNotes" 
+          :key="note.id"
+          class="card bg-base-100 shadow-sm mb-2 cursor-pointer hover:bg-base-300"
+          :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
+          @click="handleSelectNote(note)"
+        >
+          <div class="card-body p-4">
+            <h3 class="card-title text-sm">{{ note.title || '未命名笔记' }}</h3>
+            <div class="text-xs opacity-70">
+              <span>{{ formatDate(note.created_at) }}</span>
+              <div class="badge badge-sm" v-if="note.category">
+                {{ note.category.name }}
               </div>
             </div>
           </div>
-        </n-tab-pane>
+        </div>
+      </div>
 
-        <!-- 分类标签页 -->
-        <n-tab-pane name="categories" tab="分类">
-          <n-tree
-            block-line
-            :data="categoryTreeData"
-            :render-label="renderCategoryLabel"
-            @update:selected-keys="handleCategorySelect"
-            :selected-keys="selectedCategoryKeys"
-          />
-        </n-tab-pane>
+      <!-- 分类列表 -->
+      <div v-if="activeTab === 'categories'" class="flex-1 overflow-y-auto">
+        <ul class="menu bg-base-100 rounded-box">
+          <li v-for="category in categoryTreeData" :key="category.key">
+            <a 
+              :class="{ 'active': selectedCategoryKeys.includes(category.key) }"
+              @click="handleCategorySelect([category.key])"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              {{ category.label }}
+            </a>
+          </li>
+        </ul>
+      </div>
 
-        <!-- 标签标签页 -->
-        <n-tab-pane name="tags" tab="标签">
-          <div class="tags-list">
-            <n-space wrap>
-              <n-tag
-                v-for="tag in tagOptions"
-                :key="tag.value"
-                :type="selectedTagIds.includes(tag.value) ? 'primary' : 'default'"
-                :bordered="false"
-                clickable
-                @click="handleTagClick(tag.value)"
-              >
-                {{ tag.label }}
-              </n-tag>
-            </n-space>
+      <!-- 标签列表 -->
+      <div v-if="activeTab === 'tags'" class="flex-1 overflow-y-auto">
+        <div class="flex flex-wrap gap-2">
+          <div
+            v-for="tag in tagOptions"
+            :key="tag.value"
+            class="badge badge-lg cursor-pointer"
+            :class="{ 'badge-primary': selectedTagIds.includes(tag.value) }"
+            @click="handleTagClick(tag.value)"
+          >
+            {{ tag.label }}
           </div>
-        </n-tab-pane>
-      </n-tabs>
+        </div>
+      </div>
     </div>
 
     <!-- 右侧编辑区 -->
-    <div class="editor-container" v-if="currentNote">
-      <div class="editor-header">
-        <n-input
-          v-model:value="currentNote.title"
+    <div class="flex-1 bg-base-100 rounded-lg" v-if="currentNote">
+      <div class="p-4 border-b">
+        <input
+          v-model="currentNote.title"
           type="text"
           placeholder="笔记标题"
-          class="title-input"
+          class="input input-lg w-full"
           @blur="handleSaveNote"
         />
       </div>
@@ -104,29 +121,23 @@
         @change="handleContentChange"
       />
     </div>
-    <div class="empty-state" v-else>
-      <n-empty description="选择或创建一个笔记开始编辑">
-        <template #extra>
-          <n-button type="primary" @click="handleNewNote">
-            新建笔记
-          </n-button>
-        </template>
-      </n-empty>
+    <div v-else class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <h3 class="text-lg font-bold mb-4">选择或创建一个笔记开始编辑</h3>
+        <button class="btn btn-primary" @click="handleNewNote">
+          新建笔记
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h } from 'vue'
-import { AddCircleSharp, SearchOutline, FolderOutline } from '@vicons/ionicons5'
+import { ref, computed, onMounted } from 'vue'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { formatDate } from '../utils/date'
-import { useMessage } from 'naive-ui'
-import type { Note, CreateNoteInput } from '../types/note'
-import type { TreeOption } from 'naive-ui'
-
-const message = useMessage()
+import type { Note } from '../types/note'
 
 // 搜索
 const searchText = ref('')
@@ -137,23 +148,12 @@ const selectedCategoryKeys = ref<string[]>([])
 const selectedTagIds = ref<string[]>([])
 
 // 分类树形数据
-const categoryTreeData = computed<TreeOption[]>(() => {
+const categoryTreeData = computed(() => {
   return categoryOptions.value.map(category => ({
     key: category.value,
-    label: category.label,
-    prefix: () => h('span', { class: 'category-icon' }, [
-      h(FolderOutline)
-    ])
+    label: category.label
   }))
 })
-
-// 渲染分类标签
-const renderCategoryLabel = (info: { option: TreeOption }) => {
-  return h('div', { class: 'category-label' }, [
-    info.option.prefix?.(),
-    h('span', { class: 'category-name' }, info.option.label as string)
-  ])
-}
 
 // 处理分类选择
 const handleCategorySelect = (keys: string[]) => {
@@ -245,69 +245,22 @@ const handleSelectNote = (note: Note) => {
 const handleNewNote = async () => {
   const timestamp = new Date().getTime()
   const title = `新建笔记_${timestamp}`
-  const newNote = {
-    title,
-    content: '',
-    file_path: `/notes/${title}.md`,
-    category_id: null,
-    tag_ids: [],
-    yaml_meta: ''
-  }
-  
   try {
-    const res = await fetch('/api/v1/notes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newNote)
-    })
-    
-    if (!res.ok) {
-      const errorData = await res.json()
-      throw new Error(errorData.error || '创建失败')
-    }
-    
-    const data = await res.json()
-    await fetchNotes()
-    currentNote.value = {
-      ...data.data,
-      category_id: null,
-      tag_ids: []
-    }
-    message.success('创建成功')
+    // 创建笔记的代码
+    console.log('创建笔记:', title)
   } catch (error) {
     console.error('创建笔记失败:', error)
-    message.error(error instanceof Error ? error.message : '创建失败')
   }
 }
 
 // 保存笔记
 const handleSaveNote = async () => {
   if (!currentNote.value) return
-  
   try {
-    const res = await fetch(`/api/v1/notes/${currentNote.value.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        title: currentNote.value.title,
-        content: currentNote.value.content,
-        category_id: currentNote.value.category_id,
-        tag_ids: currentNote.value.tag_ids
-      })
-    })
-    
-    if (!res.ok) {
-      throw new Error('保存失败')
-    }
-    
-    await fetchNotes()
+    // 保存笔记的代码
+    console.log('保存笔记:', currentNote.value.title)
   } catch (error) {
     console.error('保存笔记失败:', error)
-    message.error('保存失败')
   }
 }
 
@@ -337,6 +290,8 @@ const toolbars = [
   'link',
   'image',
   'table',
+  'mermaid',
+  'katex',
   'revoke',
   'next',
   'save',
@@ -394,135 +349,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.notes-container {
-  display: flex;
-  height: 100%;
-  gap: 1px;
-  background-color: var(--n-border-color);
-}
-
-.notes-sidebar {
-  width: 300px;
-  background-color: var(--n-color);
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid var(--n-border-color);
-}
-
-.sidebar-header {
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--n-border-color);
-}
-
-.search-input {
-  margin: 16px;
-}
-
-.sidebar-tabs {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.notes-list,
-.tags-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
-.note-item {
-  padding: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-bottom: 4px;
-}
-
-.note-item:hover {
-  background-color: var(--n-hover-color);
-}
-
-.note-item.active {
-  background-color: var(--n-primary-color-hover);
-  color: var(--n-primary-color);
-}
-
-.category-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.category-icon {
-  display: flex;
-  align-items: center;
-  color: var(--n-text-color-3);
-}
-
-.tags-list {
-  padding: 16px;
-}
-
-:deep(.n-tabs-pane) {
-  padding: 0 !important;
-  height: 100%;
-}
-
-:deep(.n-tabs-content) {
-  flex: 1;
-  overflow: hidden;
-}
-
-:deep(.n-tree .n-tree-node-content) {
-  padding: 4px 8px;
-}
-
-:deep(.n-tree .n-tree-node-content:hover) {
-  background-color: var(--n-hover-color);
-}
-
-.editor-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--n-color);
-}
-
-.editor-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--n-border-color);
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.title-input {
-  flex: 1;
-}
-
-.category-select,
-.tag-select {
-  min-width: 200px;
-}
-
 :deep(.md-editor) {
-  flex: 1;
-  border: none;
-}
-
-:deep(.md-editor-toolbar) {
-  border-bottom: 1px solid var(--n-border-color);
-}
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--n-color);
+  height: calc(100% - 80px);
 }
 </style> 

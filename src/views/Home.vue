@@ -1,115 +1,113 @@
 <template>
-  <div class="home-view">
-    <n-grid :x-gap="24" :y-gap="24" cols="2 s:1 m:2">
+  <div class="p-4 max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- 统计卡片 -->
-      <n-grid-item>
-        <n-card title="数据统计">
-          <n-grid :cols="2" :x-gap="12" :y-gap="12">
-            <n-grid-item>
-              <n-statistic label="笔记总数">
-                {{ statistics.notesCount }}
-              </n-statistic>
-            </n-grid-item>
-            <n-grid-item>
-              <n-statistic label="分类总数">
-                {{ statistics.categoriesCount }}
-              </n-statistic>
-            </n-grid-item>
-            <n-grid-item>
-              <n-statistic label="标签总数">
-                {{ statistics.tagsCount }}
-              </n-statistic>
-            </n-grid-item>
-            <n-grid-item>
-              <n-statistic label="今日新增">
-                {{ statistics.todayCount }}
-              </n-statistic>
-            </n-grid-item>
-          </n-grid>
-        </n-card>
-      </n-grid-item>
+      <div class="card bg-base-100">
+        <div class="card-body">
+          <h2 class="card-title">数据统计</h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="stats shadow">
+              <div class="stat">
+                <div class="stat-title">笔记总数</div>
+                <div class="stat-value">{{ statistics.notesCount }}</div>
+              </div>
+            </div>
+            <div class="stats shadow">
+              <div class="stat">
+                <div class="stat-title">分类总数</div>
+                <div class="stat-value">{{ statistics.categoriesCount }}</div>
+              </div>
+            </div>
+            <div class="stats shadow">
+              <div class="stat">
+                <div class="stat-title">标签总数</div>
+                <div class="stat-value">{{ statistics.tagsCount }}</div>
+              </div>
+            </div>
+            <div class="stats shadow">
+              <div class="stat">
+                <div class="stat-title">今日新增</div>
+                <div class="stat-value">{{ statistics.todayCount }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- 快速操作 -->
-      <n-grid-item>
-        <n-card title="快速操作">
-          <n-space vertical>
-            <n-button
-              type="primary"
-              block
+      <div class="card bg-base-100">
+        <div class="card-body">
+          <h2 class="card-title">快速操作</h2>
+          <div class="flex flex-col gap-4">
+            <button
+              class="btn btn-primary"
               @click="$router.push({ name: 'notes' })"
             >
-              <template #icon>
-                <n-icon><DocumentTextSharp /></n-icon>
-              </template>
+              <notes theme="outline" size="20" />
               写笔记
-            </n-button>
-            <n-button
-              type="info"
-              block
+            </button>
+            <button
+              class="btn btn-info"
               @click="$router.push({ name: 'categories' })"
             >
-              <template #icon>
-                <n-icon><FolderSharp /></n-icon>
-              </template>
+              <folder theme="outline" size="20" />
               管理分类
-            </n-button>
-            <n-button
-              type="success"
-              block
+            </button>
+            <button
+              class="btn btn-success"
               @click="$router.push({ name: 'tags' })"
             >
-              <template #icon>
-                <n-icon><PricetagsSharp /></n-icon>
-              </template>
+              <tag-one theme="outline" size="20" />
               管理标签
-            </n-button>
-          </n-space>
-        </n-card>
-      </n-grid-item>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- 最近笔记 -->
-      <n-grid-item span="2">
-        <n-card title="最近笔记">
-          <n-list>
-            <n-list-item v-for="note in recentNotes" :key="note.id">
-              <n-thing
-                :title="note.title"
-                :description="formatDate(note.created_at)"
-              >
-                <template #avatar>
-                  <n-avatar>
-                    <n-icon><DocumentTextSharp /></n-icon>
-                  </n-avatar>
-                </template>
-                <template #header-extra>
-                  <n-tag :bordered="false" type="info" size="small">
-                    {{ note.category?.name || '未分类' }}
-                  </n-tag>
-                </template>
-                <template #description>
-                  <n-space size="small">
-                    <n-tag
-                      v-for="tag in note.tags"
-                      :key="tag.id"
-                      size="small"
-                      :bordered="false"
-                    >
-                      {{ tag.name }}
-                    </n-tag>
-                  </n-space>
-                </template>
-              </n-thing>
-            </n-list-item>
-          </n-list>
-        </n-card>
-      </n-grid-item>
-    </n-grid>
+      <div class="card bg-base-100 md:col-span-2">
+        <div class="card-body">
+          <h2 class="card-title">最近笔记</h2>
+          <div class="overflow-x-auto">
+            <table class="table">
+              <tbody>
+                <tr v-for="note in recentNotes" :key="note.id" class="hover">
+                  <td>
+                    <div class="flex items-center space-x-3">
+                      <div class="avatar">
+                        <div class="mask mask-squircle w-12 h-12 bg-base-200 flex items-center justify-center">
+                          <notes theme="outline" size="24" />
+                        </div>
+                      </div>
+                      <div>
+                        <div class="font-bold">{{ note.title }}</div>
+                        <div class="text-sm opacity-50">{{ formatDate(note.created_at) }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="badge badge-ghost">{{ note.category?.name || '未分类' }}</div>
+                  </td>
+                  <td>
+                    <div class="flex gap-2">
+                      <div v-for="tag in note.tags" :key="tag.id" class="badge badge-outline">
+                        {{ tag.name }}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { DocumentTextSharp, FolderSharp, PricetagsSharp } from '@vicons/ionicons5'
+import { Notes, Folder, TagOne } from '@icon-park/vue-next'
 import { formatDate } from '../utils/date'
 
 interface Note {

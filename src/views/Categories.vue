@@ -1,94 +1,177 @@
 <template>
-  <div class="categories-view">
-    <n-card title="分类管理">
-      <template #header-extra>
-        <n-button type="primary" @click="showCreateModal = true">
-          新建分类
-        </n-button>
-      </template>
+  <div class="p-4">
+    <div class="card bg-base-100">
+      <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="card-title">分类管理</h2>
+          <button class="btn btn-primary" @click="showCreateModal = true">
+            新建分类
+          </button>
+        </div>
 
-      <!-- 分类树 -->
-      <n-tree
-        block-line
-        :data="categoriesData"
-        :render-label="renderLabel"
-        :render-prefix="renderPrefix"
-        :expand-on-click="true"
-        :selectable="false"
-      />
-    </n-card>
+        <!-- 分类树 -->
+        <ul class="menu bg-base-200 rounded-box">
+          <li v-for="category in categoriesData" :key="category.key">
+            <div class="flex justify-between items-center w-full">
+              <a class="flex-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                {{ category.label }}
+              </a>
+              <div class="flex gap-2">
+                <button class="btn btn-ghost btn-sm" @click="handleEditClick(category)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button class="btn btn-ghost btn-sm text-error" @click="handleDelete(category.key)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <ul v-if="category.children?.length">
+              <li v-for="child in category.children" :key="child.key">
+                <div class="flex justify-between items-center w-full">
+                  <a class="flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    {{ child.label }}
+                  </a>
+                  <div class="flex gap-2">
+                    <button class="btn btn-ghost btn-sm" @click="handleEditClick(child)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button class="btn btn-ghost btn-sm text-error" @click="handleDelete(child.key)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
 
     <!-- 创建分类对话框 -->
-    <n-modal v-model:show="showCreateModal" preset="dialog" title="新建分类">
-      <n-form
-        ref="formRef"
-        :model="formModel"
-        :rules="rules"
-        label-placement="left"
-        label-width="80"
-        require-mark-placement="right-hanging"
-      >
-        <n-form-item label="分类名称" path="name">
-          <n-input v-model:value="formModel.name" placeholder="请输入分类名称" />
-        </n-form-item>
-        <n-form-item label="父分类" path="parentId">
-          <n-tree-select
-            v-model:value="formModel.parentId"
-            :options="categoriesData"
-            placeholder="请选择父分类（可选）"
-            clearable
-          />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <n-button type="primary" @click="handleCreate">
-          确定
-        </n-button>
-      </template>
-    </n-modal>
+    <dialog :class="{ 'modal modal-open': showCreateModal }" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">新建分类</h3>
+        <form @submit.prevent="handleCreate">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text">分类名称</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="formModel.name" 
+              placeholder="请输入分类名称" 
+              class="input input-bordered w-full"
+              :class="{ 'input-error': formErrors.name }"
+            />
+            <label class="label" v-if="formErrors.name">
+              <span class="label-text-alt text-error">{{ formErrors.name }}</span>
+            </label>
+          </div>
+          <div class="form-control w-full mt-4">
+            <label class="label">
+              <span class="label-text">父分类</span>
+            </label>
+            <select 
+              v-model="formModel.parentId" 
+              class="select select-bordered w-full"
+            >
+              <option value="">无</option>
+              <option 
+                v-for="category in categoriesData" 
+                :key="category.key" 
+                :value="category.key"
+              >
+                {{ category.label }}
+              </option>
+            </select>
+          </div>
+          <div class="modal-action">
+            <button type="button" class="btn" @click="showCreateModal = false">取消</button>
+            <button type="submit" class="btn btn-primary">确定</button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button @click="showCreateModal = false">关闭</button>
+      </form>
+    </dialog>
 
     <!-- 编辑分类对话框 -->
-    <n-modal v-model:show="showEditModal" preset="dialog" title="编辑分类">
-      <n-form
-        ref="editFormRef"
-        :model="editFormModel"
-        :rules="rules"
-        label-placement="left"
-        label-width="80"
-        require-mark-placement="right-hanging"
-      >
-        <n-form-item label="分类名称" path="name">
-          <n-input v-model:value="editFormModel.name" placeholder="请输入分类名称" />
-        </n-form-item>
-        <n-form-item label="父分类" path="parentId">
-          <n-tree-select
-            v-model:value="editFormModel.parentId"
-            :options="categoriesData"
-            placeholder="请选择父分类（可选）"
-            clearable
-          />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <n-button type="primary" @click="handleEdit">
-          确定
-        </n-button>
-      </template>
-    </n-modal>
+    <dialog :class="{ 'modal modal-open': showEditModal }" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">编辑分类</h3>
+        <form @submit.prevent="handleEdit">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text">分类名称</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="editFormModel.name" 
+              placeholder="请输入分类名称" 
+              class="input input-bordered w-full"
+              :class="{ 'input-error': formErrors.name }"
+            />
+            <label class="label" v-if="formErrors.name">
+              <span class="label-text-alt text-error">{{ formErrors.name }}</span>
+            </label>
+          </div>
+          <div class="form-control w-full mt-4">
+            <label class="label">
+              <span class="label-text">父分类</span>
+            </label>
+            <select 
+              v-model="editFormModel.parentId" 
+              class="select select-bordered w-full"
+            >
+              <option value="">无</option>
+              <option 
+                v-for="category in categoriesData" 
+                :key="category.key" 
+                :value="category.key"
+              >
+                {{ category.label }}
+              </option>
+            </select>
+          </div>
+          <div class="modal-action">
+            <button type="button" class="btn" @click="showEditModal = false">取消</button>
+            <button type="submit" class="btn btn-primary">确定</button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button @click="showEditModal = false">关闭</button>
+      </form>
+    </dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, h, onMounted } from 'vue'
-import { FolderSharp, CreateSharp, TrashSharp } from '@vicons/ionicons5'
-import type { FormInst, TreeOption } from 'naive-ui'
-import { useMessage } from 'naive-ui'
+import { ref, onMounted } from 'vue'
 
-const message = useMessage()
+interface Category {
+  key: string
+  label: string
+  parentId: string | null
+  children?: Category[]
+}
 
 // 表单相关
-const formRef = ref<FormInst | null>(null)
-const editFormRef = ref<FormInst | null>(null)
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const formModel = ref({
@@ -100,16 +183,12 @@ const editFormModel = ref({
   name: '',
   parentId: null as string | null
 })
-const rules = {
-  name: {
-    required: true,
-    message: '请输入分类名称',
-    trigger: ['blur', 'input']
-  }
-}
+const formErrors = ref({
+  name: ''
+})
 
 // 分类数据
-const categoriesData = ref<TreeOption[]>([])
+const categoriesData = ref<Category[]>([])
 
 // 获取分类列表
 const fetchCategories = async () => {
@@ -118,14 +197,28 @@ const fetchCategories = async () => {
     const data = await response.json()
     categoriesData.value = data
   } catch (error) {
-    message.error('获取分类列表失败')
+    console.error('获取分类列表失败:', error)
+    alert('获取分类列表失败')
   }
+}
+
+// 验证表单
+const validateForm = (form: { name: string }) => {
+  const errors = {
+    name: ''
+  }
+  if (!form.name.trim()) {
+    errors.name = '请输入分类名称'
+  }
+  formErrors.value = errors
+  return !errors.name
 }
 
 // 创建分类
 const handleCreate = async () => {
+  if (!validateForm(formModel.value)) return
+
   try {
-    await formRef.value?.validate()
     const response = await fetch('/api/v1/categories', {
       method: 'POST',
       headers: {
@@ -134,22 +227,33 @@ const handleCreate = async () => {
       body: JSON.stringify(formModel.value)
     })
     if (response.ok) {
-      message.success('创建成功')
+      alert('创建成功')
       showCreateModal.value = false
       formModel.value = { name: '', parentId: null }
       await fetchCategories()
     } else {
-      message.error('创建失败')
+      alert('创建失败')
     }
   } catch (error) {
-    message.error('表单验证失败')
+    console.error('创建失败:', error)
+    alert('创建失败')
   }
 }
 
 // 编辑分类
+const handleEditClick = (category: Category) => {
+  editFormModel.value = {
+    id: category.key,
+    name: category.label,
+    parentId: category.parentId
+  }
+  showEditModal.value = true
+}
+
 const handleEdit = async () => {
+  if (!validateForm(editFormModel.value)) return
+
   try {
-    await editFormRef.value?.validate()
     const response = await fetch(`/api/v1/categories/${editFormModel.value.id}`, {
       method: 'PUT',
       headers: {
@@ -161,96 +265,40 @@ const handleEdit = async () => {
       })
     })
     if (response.ok) {
-      message.success('更新成功')
+      alert('更新成功')
       showEditModal.value = false
       await fetchCategories()
     } else {
-      message.error('更新失败')
+      alert('更新失败')
     }
   } catch (error) {
-    message.error('表单验证失败')
+    console.error('更新失败:', error)
+    alert('更新失败')
   }
 }
 
 // 删除分类
 const handleDelete = async (id: string) => {
+  if (!confirm('确定要删除这个分类吗？')) return
+
   try {
     const response = await fetch(`/api/v1/categories/${id}`, {
       method: 'DELETE'
     })
     if (response.ok) {
-      message.success('删除成功')
+      alert('删除成功')
       await fetchCategories()
     } else {
       const data = await response.json()
-      message.error(data.error || '删除失败')
+      alert(data.error || '删除失败')
     }
   } catch (error) {
-    message.error('删除失败')
+    console.error('删除失败:', error)
+    alert('删除失败')
   }
-}
-
-// 渲染分类前缀图标
-const renderPrefix = () => {
-  return h(NIcon, null, { default: () => h(FolderSharp) })
-}
-
-// 渲染分类标签（包含编辑和删除按钮）
-const renderLabel = (node: TreeOption) => {
-  return h(
-    'div',
-    {
-      style: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px'
-      }
-    },
-    [
-      node.label,
-      h(
-        NButton,
-        {
-          text: true,
-          type: 'primary',
-          size: 'small',
-          onClick: (e: Event) => {
-            e.stopPropagation()
-            editFormModel.value = {
-              id: node.key as string,
-              name: node.label as string,
-              parentId: node.parentId as string | null
-            }
-            showEditModal.value = true
-          }
-        },
-        { icon: () => h(CreateSharp) }
-      ),
-      h(
-        NButton,
-        {
-          text: true,
-          type: 'error',
-          size: 'small',
-          onClick: (e: Event) => {
-            e.stopPropagation()
-            handleDelete(node.key as string)
-          }
-        },
-        { icon: () => h(TrashSharp) }
-      )
-    ]
-  )
 }
 
 onMounted(() => {
   fetchCategories()
 })
-</script>
-
-<style scoped>
-.categories-view {
-  max-width: 800px;
-  margin: 0 auto;
-}
-</style> 
+</script> 

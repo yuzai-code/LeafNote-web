@@ -1,80 +1,77 @@
 <template>
-  <n-layout has-sider>
-    <!-- 侧边栏 -->
-    <n-layout-sider
-      bordered
-      collapse-mode="width"
-      :collapsed-width="64"
-      :width="240"
-      :collapsed="collapsed"
-      show-trigger
-      @collapse="collapsed = true"
-      @expand="collapsed = false"
-    >
-      <n-menu
-        :collapsed="collapsed"
-        :collapsed-width="64"
-        :collapsed-icon-size="22"
-        :options="menuOptions"
-        :default-value="activeKey"
-        @update:value="handleMenuClick"
-      />
-    </n-layout-sider>
-
-    <!-- 主内容区 -->
-    <n-layout>
-      <!-- 顶部导航 -->
-      <n-layout-header bordered>
-        <div class="header-content">
-          <div class="header-left">
-            <n-breadcrumb>
-              <n-breadcrumb-item>LeafNote</n-breadcrumb-item>
-              <n-breadcrumb-item>{{ currentRoute }}</n-breadcrumb-item>
-            </n-breadcrumb>
-          </div>
-          <div class="header-right">
-            <n-button-group>
-              <n-button secondary type="primary" @click="toggleDark()">
-                <template #icon>
-                  <n-icon>
-                    <SunnySharp v-if="isDark" />
-                    <MoonSharp v-else />
-                  </n-icon>
-                </template>
-              </n-button>
-              <n-button secondary type="primary">
-                <template #icon>
-                  <n-icon><SettingsSharp /></n-icon>
-                </template>
-              </n-button>
-            </n-button-group>
+  <div class="drawer lg:drawer-open">
+    <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+    
+    <!-- 抽屉内容 -->
+    <div class="drawer-content flex flex-col">
+      <!-- 顶部导航栏 -->
+      <div class="navbar bg-base-100 border-b">
+        <div class="flex-none lg:hidden">
+          <label for="main-drawer" class="btn btn-square btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </label>
+        </div>
+        <div class="flex-1">
+          <div class="breadcrumbs text-sm">
+            <ul>
+              <li>LeafNote</li>
+              <li>{{ currentRoute }}</li>
+            </ul>
           </div>
         </div>
-      </n-layout-header>
+        <div class="flex-none">
+          <button class="btn btn-ghost btn-circle" @click="toggleDark">
+            <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+          <button class="btn btn-ghost btn-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
-      <!-- 内容区 -->
-      <n-layout-content content-style="padding: 24px;">
+      <!-- 主要内容区域 -->
+      <div class="p-6 flex-1">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
           </transition>
         </router-view>
-      </n-layout-content>
-    </n-layout>
-  </n-layout>
+      </div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="drawer-side">
+      <label for="main-drawer" class="drawer-overlay"></label>
+      <ul class="menu p-4 w-60 h-full bg-base-200 text-base-content">
+        <li v-for="item in menuOptions" :key="item.key">
+          <a 
+            :class="{ 'active': activeKey === item.key }"
+            @click="handleMenuClick(item.key)"
+          >
+            <component :is="item.icon" class="w-5 h-5" />
+            {{ item.label }}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { NIcon } from 'naive-ui'
-import type { MenuOption } from 'naive-ui'
-import { SunnySharp, MoonSharp, SettingsSharp, DocumentTextSharp, PricetagsSharp, FolderSharp, HomeSharp } from '@vicons/ionicons5'
 import { useTheme } from '../composables/useTheme'
 
 const route = useRoute()
 const router = useRouter()
-const collapsed = ref(false)
 const { isDark, toggleDark } = useTheme()
 
 // 计算当前路由名称
@@ -94,32 +91,27 @@ const activeKey = computed(() => {
   return name || 'home'
 })
 
-// 渲染图标的辅助函数
-function renderIcon(icon: any) {
-  return () => h(NIcon, null, { default: () => h(icon) })
-}
-
 // 侧边栏菜单配置
-const menuOptions: MenuOption[] = [
+const menuOptions = [
   {
     label: '首页',
     key: 'home',
-    icon: renderIcon(HomeSharp)
+    icon: 'i-heroicons-home'
   },
   {
     label: '笔记',
     key: 'notes',
-    icon: renderIcon(DocumentTextSharp)
+    icon: 'i-heroicons-document-text'
   },
   {
     label: '分类',
     key: 'categories',
-    icon: renderIcon(FolderSharp)
+    icon: 'i-heroicons-folder'
   },
   {
     label: '标签',
     key: 'tags',
-    icon: renderIcon(PricetagsSharp)
+    icon: 'i-heroicons-tag'
   }
 ]
 
@@ -130,26 +122,6 @@ function handleMenuClick(key: string) {
 </script>
 
 <style scoped>
-.header-content {
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* 路由过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;

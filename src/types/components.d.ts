@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    ExampleComponent: typeof import('./../components/ExampleComponent.vue')['default']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     MainLayout: typeof import('./../layouts/MainLayout.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
