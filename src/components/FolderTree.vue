@@ -15,78 +15,88 @@
           </button>
         </div>
 
-        <template v-for="folder in folderTree" :key="folder.id">
-          <FolderItem
-            :folder="folder"
-            :is-expanded="isExpanded(folder)"
-            :is-renaming="renameTarget?.id === folder.id"
-            @toggle="toggleFolder"
-            @create-note="handleCreateNote(folder)"
-            @create-folder="handleCreateFolder(folder)"
-            @rename="handleRenameFolder(folder)"
-            @move="handleMoveFolder($event, folder)"
-            @delete="handleDeleteFolder(folder)"
-            @rename-confirm="handleRenameConfirm"
-            @cancel-rename="cancelRename"
-            @drop-note="(noteId) => handleDropNote(noteId, folder)"
-            @drop-folder="(folderId) => handleDropFolder(folderId, folder)"
-          >
-            <!-- 子目录和笔记 -->
-            <template v-if="folder.children?.length">
-              <FolderItem
-                v-for="child in folder.children"
-                :key="child.id"
-                :folder="child"
-                :is-expanded="isExpanded(child)"
-                :is-renaming="renameTarget?.id === child.id"
-                @toggle="toggleFolder"
-                @create-note="handleCreateNote(child)"
-                @create-folder="handleCreateFolder(child)"
-                @rename="handleRenameFolder(child)"
-                @move="handleMoveFolder($event, folder)"
-                @delete="handleDeleteFolder(child)"
-                @rename-confirm="handleRenameConfirm"
-                @cancel-rename="cancelRename"
-                @drop-note="(noteId) => handleDropNote(noteId, child)"
-                @drop-folder="(folderId) => handleDropFolder(folderId, child)"
-              >
-                <!-- 子目录的笔记列表 -->
-                <div v-if="child.notes?.length">
-                  <NoteItem
-                    v-for="note in child.notes"
-                    :key="note.id"
-                    :note="note"
-                    :is-active="currentNote?.id === note.id"
-                    :is-renaming="renameTarget?.id === note.id"
-                    @click="handleNoteClick(note)"
-                    @rename="handleRenameNote(note)"
-                    @move="handleMoveNote(note, child)"
-                    @delete="handleDeleteNote(note)"
-                    @rename-confirm="handleRenameConfirm"
-                    @cancel-rename="cancelRename"
-                  />
-                </div>
-              </FolderItem>
-            </template>
+        <transition-group name="list">
+          <template v-for="folder in folderTree" :key="folder.id">
+            <FolderItem
+              :folder="folder"
+              :is-expanded="isExpanded(folder)"
+              :is-renaming="renameTarget?.id === folder.id"
+              @toggle="toggleFolder"
+              @create-note="handleCreateNote(folder)"
+              @create-folder="handleCreateFolder(folder)"
+              @rename="handleRenameFolder(folder)"
+              @move="handleMoveFolder($event, folder)"
+              @delete="handleDeleteFolder(folder)"
+              @rename-confirm="handleRenameConfirm"
+              @cancel-rename="cancelRename"
+              @drop-note="(noteId) => handleDropNote(noteId, folder)"
+              @drop-folder="(folderId) => handleDropFolder(folderId, folder)"
+            >
+              <template v-if="isExpanded(folder)">
+                <div class="folder-children" ref="folderContent">
+                  <transition name="slide">
+                    <div v-show="isExpanded(folder)">
+                      <!-- 子目录和笔记 -->
+                      <template v-if="folder.children?.length">
+                        <FolderItem
+                          v-for="child in folder.children"
+                          :key="child.id"
+                          :folder="child"
+                          :is-expanded="isExpanded(child)"
+                          :is-renaming="renameTarget?.id === child.id"
+                          @toggle="toggleFolder"
+                          @create-note="handleCreateNote(child)"
+                          @create-folder="handleCreateFolder(child)"
+                          @rename="handleRenameFolder(child)"
+                          @move="handleMoveFolder($event, folder)"
+                          @delete="handleDeleteFolder(child)"
+                          @rename-confirm="handleRenameConfirm"
+                          @cancel-rename="cancelRename"
+                          @drop-note="(noteId) => handleDropNote(noteId, child)"
+                          @drop-folder="(folderId) => handleDropFolder(folderId, child)"
+                        >
+                          <!-- 子目录的笔记列表 -->
+                          <div v-if="child.notes?.length" class="note-list">
+                            <NoteItem
+                              v-for="note in child.notes"
+                              :key="note.id"
+                              :note="note"
+                              :is-active="currentNote?.id === note.id"
+                              :is-renaming="renameTarget?.id === note.id"
+                              @click="handleNoteClick(note)"
+                              @rename="handleRenameNote(note)"
+                              @move="handleMoveNote(note, child)"
+                              @delete="handleDeleteNote(note)"
+                              @rename-confirm="handleRenameConfirm"
+                              @cancel-rename="cancelRename"
+                            />
+                          </div>
+                        </FolderItem>
+                      </template>
 
-            <!-- 笔记列表 -->
-            <div v-if="folder.notes?.length">
-              <NoteItem
-                v-for="note in folder.notes"
-                :key="note.id"
-                :note="note"
-                :is-active="currentNote?.id === note.id"
-                :is-renaming="renameTarget?.id === note.id"
-                @click="handleNoteClick(note)"
-                @rename="handleRenameNote(note)"
-                @move="handleMoveNote(note, folder)"
-                @delete="handleDeleteNote(note)"
-                @rename-confirm="handleRenameConfirm"
-                @cancel-rename="cancelRename"
-              />
-            </div>
-          </FolderItem>
-        </template>
+                      <!-- 笔记列表 -->
+                      <div v-if="folder.notes?.length" class="note-list">
+                        <NoteItem
+                          v-for="note in folder.notes"
+                          :key="note.id"
+                          :note="note"
+                          :is-active="currentNote?.id === note.id"
+                          :is-renaming="renameTarget?.id === note.id"
+                          @click="handleNoteClick(note)"
+                          @rename="handleRenameNote(note)"
+                          @move="handleMoveNote(note, folder)"
+                          @delete="handleDeleteNote(note)"
+                          @rename-confirm="handleRenameConfirm"
+                          @cancel-rename="cancelRename"
+                        />
+                      </div>
+                    </div>
+                  </transition>
+                </div>
+              </template>
+            </FolderItem>
+          </template>
+        </transition-group>
       </div>
     </div>
 
@@ -148,11 +158,13 @@ const isExpanded = (folder: Category) => {
 const toggleFolder = async (folder: Category) => {
   currentFolder.value = folder
   if (expandedFolders.value.has(folder.id)) {
+    // 关闭目录时，直接移除
     expandedFolders.value.delete(folder.id)
   } else {
-    expandedFolders.value.add(folder.id)
-    // 加载笔记列表
+    // 展开目录时，先加载数据
     await handleFolderClick(folder)
+    // 然后添加到展开集合
+    expandedFolders.value.add(folder.id)
   }
 }
 
@@ -160,6 +172,9 @@ const toggleFolder = async (folder: Category) => {
 const handleFolderClick = async (folder: Category) => {
   console.log('点击目录:', folder)
   try {
+    // 如果已经有数据，就不重新加载
+    if (folder.notes && folder.notes.length > 0) return
+
     const response = await fetch(`/api/v1/notes?category_id=${folder.id}`)
     if (!response.ok) {
       throw new Error('获取笔记列表失败')
@@ -171,6 +186,7 @@ const handleFolderClick = async (folder: Category) => {
     const updateFolderNotes = (folders: Category[]) => {
       for (const f of folders) {
         if (f.id === folder.id) {
+          // 使用 Vue 的响应式更新
           f.notes = data
           break
         }
@@ -350,8 +366,11 @@ const handleCreateNote = async (folder: Category) => {
     currentNote.value = note
     emit('select-note', note)
     
-    // 刷新当前目录的笔记列表
-    await handleFolderClick(folder)
+    // 直接更新当前目录的笔记列表
+    const response2 = await fetch(`/api/v1/notes?category_id=${folder.id}`)
+    if (response2.ok) {
+      folder.notes = await response2.json()
+    }
     
     // 直接进入重命名状态
     renameTarget.value = note
@@ -557,7 +576,15 @@ const handleDeleteNote = async (note: Note) => {
         currentNote.value = null
         emit('select-note', null)
       }
-      await fetchFolders()
+      
+      // 找到笔记所在的目录并更新其笔记列表
+      const folder = findFolderByNoteId(folderTree.value, note.id)
+      if (folder) {
+        const response = await fetch(`/api/v1/notes?category_id=${folder.id}`)
+        if (response.ok) {
+          folder.notes = await response.json()
+        }
+      }
     } else {
       alert('删除失败')
     }
@@ -576,6 +603,31 @@ const fetchFolders = async () => {
     }
     const data = await response.json()
     console.log('目录数据:', data)
+
+    // 保存已展开目录的笔记列表
+    const saveExpandedNotes = async (oldFolders: Category[], newFolders: Category[]) => {
+      for (const newFolder of newFolders) {
+        // 如果目录是展开的，获取笔记列表
+        if (expandedFolders.value.has(newFolder.id)) {
+          const response = await fetch(`/api/v1/notes?category_id=${newFolder.id}`)
+          if (response.ok) {
+            newFolder.notes = await response.json()
+          }
+        }
+        // 递归处理子目录
+        if (newFolder.children) {
+          const oldFolder = oldFolders.find(f => f.id === newFolder.id)
+          if (oldFolder?.children) {
+            await saveExpandedNotes(oldFolder.children, newFolder.children)
+          }
+        }
+      }
+    }
+
+    // 保存当前展开的目录的笔记列表
+    await saveExpandedNotes(folderTree.value, data)
+    
+    // 更新目录树
     folderTree.value = data
   } catch (error) {
     console.error('获取目录列表失败:', error)
@@ -745,11 +797,14 @@ defineExpose({
 }
 
 .folder-children {
-  padding-left: 12px;
+  padding-left: 1rem;
+  overflow: hidden;
+  transition: height 0.1s ease-in-out;
 }
 
 .note-list {
-  padding-left: 12px;
+  overflow: hidden;
+  transition: height 0.1s ease-in-out;
 }
 
 .note-item {
@@ -800,22 +855,34 @@ defineExpose({
 }
 
 .expand-enter-active,
-.expand-leave-active {
-  transition: all 0.3s ease;
-  overflow: visible !important;
-}
-
+.expand-leave-active,
 .expand-enter-from,
-.expand-leave-to {
-  opacity: 0;
-  max-height: 0;
-  transform: translateY(-10px);
+.expand-leave-to,
+.expand-enter-to,
+.expand-leave-from,
+.list-move,
+.list-enter-active,
+.list-leave-active,
+.list-enter-from,
+.list-leave-to,
+.list-leave-active {
+  all: unset;
 }
 
-.expand-enter-to,
-.expand-leave-from {
-  opacity: 1;
-  max-height: 1000px;
-  transform: translateY(0);
+/* 添加新的展开/收起动画 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: height 0.1s ease-in-out;
+  overflow: hidden;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  height: 0;
+}
+
+.slide-enter-to,
+.slide-leave-from {
+  height: var(--content-height);
 }
 </style> 
