@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center justify-between py-1 px-2 hover:bg-base-200 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
        :class="{ 'bg-primary text-primary-content': isActive }"
-       @click="$emit('click', note)"
+       @click="handleClick"
        draggable="true"
        @dragstart="handleDragStart">
     <div class="flex-1">
@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import type { Note } from '../types'
 
 const props = defineProps<{
@@ -67,6 +67,10 @@ const emit = defineEmits<{
 
 const showDropdown = ref(false)
 const renameValue = ref(props.note.title)
+
+const handleClick = () => {
+  emit('click', props.note)
+}
 
 const handleDropdownClick = (event: MouseEvent) => {
   event.stopPropagation()

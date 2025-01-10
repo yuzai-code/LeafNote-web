@@ -58,7 +58,7 @@
                     :note="note"
                     :is-active="currentNote?.id === note.id"
                     :is-renaming="renameTarget?.id === note.id"
-                    @click="handleNoteClick"
+                    @click="handleNoteClick(note)"
                     @rename="handleRenameNote(note)"
                     @move="handleMoveNote(note, child)"
                     @delete="handleDeleteNote(note)"
@@ -77,7 +77,7 @@
                 :note="note"
                 :is-active="currentNote?.id === note.id"
                 :is-renaming="renameTarget?.id === note.id"
-                @click="handleNoteClick"
+                @click="handleNoteClick(note)"
                 @rename="handleRenameNote(note)"
                 @move="handleMoveNote(note, folder)"
                 @delete="handleDeleteNote(note)"
@@ -107,6 +107,11 @@ import NoteItem from './NoteItem.vue'
 import FolderItem from './FolderItem.vue'
 import FolderSelect from './FolderSelect.vue'
 
+// 定义事件
+const emit = defineEmits<{
+  (e: 'select-note', note: Note | null): void
+}>()
+
 // 当前编辑的笔记
 const currentNote = ref<Note | null>(null)
 
@@ -126,6 +131,14 @@ const moveSourceFolder = ref<Category | undefined>(undefined)
 // 展开的目录ID集合
 const expandedFolders = ref<Set<string>>(new Set())
 
+// 当前选中的目录
+const currentFolder = ref<Category | null>(null)
+
+// 获取当前目录
+const getCurrentFolder = () => {
+  return currentFolder.value
+}
+
 // 判断目录是否展开
 const isExpanded = (folder: Category) => {
   return expandedFolders.value.has(folder.id)
@@ -133,6 +146,7 @@ const isExpanded = (folder: Category) => {
 
 // 切换目录展开状态
 const toggleFolder = async (folder: Category) => {
+  currentFolder.value = folder
   if (expandedFolders.value.has(folder.id)) {
     expandedFolders.value.delete(folder.id)
   } else {
@@ -189,6 +203,7 @@ const handleNoteClick = async (note: Note) => {
   } catch (error) {
     console.error('获取笔记内容失败:', error)
     alert('获取笔记内容失败')
+    emit('select-note', null)
   }
 }
 
@@ -589,11 +604,6 @@ const handleRenameNote = (note: Note) => {
   })
 }
 
-// 定义事件
-const emit = defineEmits<{
-  (e: 'select-note', note: Note | null): void
-}>()
-
 // 展开动画相关函数
 const expandEnter = (el: Element) => {
   const element = el as HTMLElement
@@ -709,6 +719,13 @@ onMounted(() => {
 // 在组件卸载时移除事件监听
 onUnmounted(() => {
   document.removeEventListener('click', closeDropdown)
+})
+
+// 暴露方法给父组件
+defineExpose({
+  getCurrentFolder,
+  handleCreateNote,
+  handleFolderClick
 })
 </script>
 

@@ -20,12 +20,12 @@
     </div>
 
     <!-- 中间侧边栏 -->
-    <div v-if="showSidebar" class="w-80 bg-base-100 border-r">
+<!--     <div v-if="showSidebar" class="w-80 bg-base-100 border-r">
       <SidebarFolderTree v-if="route.path === '/notes'" @select-note="handleNoteSelect" />
       <div v-else-if="route.path === '/tags'" class="h-full p-4">
         <h2 class="text-lg font-bold">标签</h2>
       </div>
-    </div>
+    </div -->>
 
     <!-- 主要内容区域 -->
     <div class="flex-1 bg-base-100 p-4 overflow-auto">
