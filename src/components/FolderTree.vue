@@ -3,7 +3,7 @@
     <!-- 目录树和笔记列表 -->
     <div class="flex-1 overflow-y-auto">
       <!-- 目录树 -->
-      <div class="menu bg-base-100">
+      <div class="menu bg-base-100 relative">
         <!-- 新建一级目录按钮 -->
         <div class="flex items-center justify-between p-2">
           <span class="text-lg font-bold">笔记目录</span>
@@ -51,12 +51,14 @@
               </div>
               <div class="flex-none">
                 <div class="dropdown dropdown-end">
-                  <button class="btn btn-ghost btn-sm">
+                  <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, folder.id)">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                     </svg>
                   </button>
-                  <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                  <ul v-if="activeDropdown === folder.id" 
+                      class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
+                      @click.stop>
                     <li><button @click="handleCreateNote(folder)">新建笔记</button></li>
                     <li><button @click="handleCreateFolder(folder)">新建子目录</button></li>
                     <li><button @click="handleRenameFolder(folder)">重命名</button></li>
@@ -105,12 +107,14 @@
                       </div>
                       <div class="flex-none">
                         <div class="dropdown dropdown-end">
-                          <button class="btn btn-ghost btn-sm">
+                          <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, child.id)">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                             </svg>
                           </button>
-                          <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                          <ul v-if="activeDropdown === child.id" 
+                              class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
+                              @click.stop>
                             <li><button @click="handleCreateNote(child)">新建笔记</button></li>
                             <li><button @click="handleCreateFolder(child)">新建子目录</button></li>
                             <li><button @click="handleRenameFolder(child)">重命名</button></li>
@@ -151,12 +155,14 @@
                         </div>
                         <div class="flex-none">
                           <div class="dropdown dropdown-end">
-                            <button class="btn btn-ghost btn-sm" @click.stop>
+                            <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, note.id)">
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                               </svg>
                             </button>
-                            <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                            <ul v-if="activeDropdown === note.id" 
+                                class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
+                                @click.stop>
                               <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
                               <li><button @click.stop="handleMoveNote(note)">移动</button></li>
                               <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
@@ -199,12 +205,14 @@
                     </div>
                     <div class="flex-none">
                       <div class="dropdown dropdown-end">
-                        <button class="btn btn-ghost btn-sm" @click.stop>
+                        <button class="btn btn-ghost btn-sm" @click="positionDropdown($event, note.id)">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                           </svg>
                         </button>
-                        <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                        <ul v-if="activeDropdown === note.id" 
+                            class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
+                            @click.stop>
                           <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
                           <li><button @click.stop="handleMoveNote(note)">移动</button></li>
                           <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
@@ -269,7 +277,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import type { Note, Category } from '../types'
 
 // 当前编辑的笔记
@@ -749,13 +757,77 @@ const expandAfterLeave = (el: Element) => {
   (el as HTMLElement).style.maxHeight = 'none'
 }
 
+// 添加 positionDropdown 函数
+const activeDropdown = ref<string | null>(null)
+
+const positionDropdown = (event: MouseEvent, id: string) => {
+  event.stopPropagation()
+  // 如果当前下拉菜单已经打开，则关闭它
+  if (activeDropdown.value === id) {
+    activeDropdown.value = null
+    return
+  }
+  // 否则打开新的下拉菜单
+  activeDropdown.value = id
+  nextTick(() => {
+    const button = event.currentTarget as HTMLElement
+    const dropdown = button.nextElementSibling as HTMLElement
+    if (!dropdown) return
+
+    const rect = button.getBoundingClientRect()
+    dropdown.style.top = `${rect.bottom + 8}px`
+    dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`
+  })
+}
+
+// 添加关闭下拉菜单的函数
+const closeDropdown = () => {
+  activeDropdown.value = null
+}
+
 onMounted(() => {
   console.log('组件已挂载，开始获取目录数据')
   fetchFolders()
+  
+  // 添加全局点击事件来关闭下拉菜单
+  document.addEventListener('click', closeDropdown)
+})
+
+// 在组件卸载时移除事件监听
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown)
 })
 </script>
 
 <style scoped>
+.menu {
+  position: static !important;
+}
+
+.dropdown {
+  position: relative !important;
+}
+
+.dropdown-content {
+  position: fixed !important;
+  z-index: 9999 !important;
+  opacity: 1;
+  visibility: visible;
+  transform-origin: top right;
+  animation: dropdown-show 0.1s ease-out;
+}
+
+@keyframes dropdown-show {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .folder-tree {
   padding: 4px;
   user-select: none;
@@ -853,7 +925,7 @@ onMounted(() => {
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.3s ease;
-  overflow: hidden;
+  overflow: visible !important;
 }
 
 .expand-enter-from,
