@@ -1,181 +1,190 @@
 <template>
   <div class="flex flex-col h-full">
-    <!-- 搜索框 -->
-    <div class="form-control p-4">
-      <div class="input-group">
-        <input 
-          type="text" 
-          v-model="searchText"
-          placeholder="搜索笔记..." 
-          class="input input-bordered w-full"
-        />
-        <button class="btn btn-square">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
-      </div>
-    </div>
-
     <!-- 目录树和笔记列表 -->
     <div class="flex-1 overflow-y-auto">
-      <div class="flex justify-between items-center p-4">
-        <h3 class="font-bold">笔记目录</h3>
-        <div class="dropdown dropdown-end">
-          <button tabindex="0" class="btn btn-ghost btn-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </button>
-          <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-            <li>
-              <button @click="($event: MouseEvent) => handleCreateFolder()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-                新建目录
-              </button>
-            </li>
-            <li>
-              <button @click="($event: MouseEvent) => handleCreateNote()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                新建笔记
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-
       <!-- 目录树 -->
       <div class="menu bg-base-100">
-        <template v-for="folder in folderTree" :key="folder.key">
-          <!-- 目录项 -->
-          <div class="collapse collapse-arrow">
-            <input type="checkbox" class="peer" :checked="true" /> 
-            <div class="collapse-title flex items-center gap-2 min-h-8 !p-2">
+        <!-- 新建一级目录按钮 -->
+        <div class="navbar bg-base-100">
+          <div class="flex-1">
+            <span class="text-lg font-bold">笔记目录</span>
+          </div>
+          <div class="flex-none">
+            <button class="btn btn-ghost btn-sm" @click="handleCreateFolder()">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              <span class="flex-1">{{ folder.label }}</span>
-              <div class="dropdown dropdown-end">
-                <button tabindex="0" class="btn btn-ghost btn-xs" @click.stop>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
+              新建目录
+            </button>
+          </div>
+        </div>
+
+        <template v-for="folder in folderTree" :key="folder.id">
+          <!-- 目录项 -->
+          <div>
+            <div class="navbar bg-base-100 hover:bg-base-200">
+              <div class="flex-1 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                <div v-if="renameTarget?.id === folder.id" class="flex-1">
+                  <input 
+                    type="text" 
+                    v-model="renameValue" 
+                    class="input input-bordered input-sm w-full"
+                    @keyup.enter="handleRenameConfirm"
+                    @keyup.esc="cancelRename"
+                    @blur="handleRenameConfirm"
+                    :data-rename-id="folder.id"
+                  />
+                </div>
+                <button v-else class="flex-1 text-left text-base" @click="toggleFolder(folder)">
+                  {{ folder.name }}
                 </button>
-                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                  <li>
-                    <button @click="($event: MouseEvent) => handleCreateFolder(folder)">新建子目录</button>
-                  </li>
-                  <li>
-                    <button @click="($event: MouseEvent) => handleCreateNote(folder)">新建笔记</button>
-                  </li>
-                  <li>
-                    <button @click="($event: MouseEvent) => handleRenameFolder(folder)">重命名</button>
-                  </li>
-                  <li>
-                    <button @click="($event: MouseEvent) => handleDeleteFolder(folder)" class="text-error">删除</button>
-                  </li>
-                </ul>
+              </div>
+              <div class="flex-none">
+                <div class="dropdown dropdown-end">
+                  <button class="btn btn-square btn-ghost">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                    </svg>
+                  </button>
+                  <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><button @click="handleCreateNote(folder)">新建笔记</button></li>
+                    <li><button @click="handleCreateFolder(folder)">新建子目录</button></li>
+                    <li><button @click="handleRenameFolder(folder)">重命名</button></li>
+                    <li><button @click="handleDeleteFolder(folder)" class="text-error">删除</button></li>
+                  </ul>
+                </div>
               </div>
             </div>
-            <div class="collapse-content !p-0">
+
+            <!-- 子目录和笔记 -->
+            <div v-show="isExpanded(folder)">
               <!-- 子目录 -->
               <template v-if="folder.children?.length">
-                <div v-for="child in folder.children" :key="child.key" class="pl-4">
-                  <div class="collapse collapse-arrow">
-                    <input type="checkbox" class="peer" :checked="true" />
-                    <div class="collapse-title flex items-center gap-2 min-h-8 !p-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div v-for="child in folder.children" :key="child.id" class="pl-4">
+                  <div class="navbar bg-base-100 hover:bg-base-200">
+                    <div class="flex-1 flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                       </svg>
-                      <span class="flex-1">{{ child.label }}</span>
+                      <div v-if="renameTarget?.id === child.id" class="flex-1">
+                        <input 
+                          type="text" 
+                          v-model="renameValue" 
+                          class="input input-bordered input-sm w-full"
+                          @keyup.enter="handleRenameConfirm"
+                          @keyup.esc="cancelRename"
+                          @blur="handleRenameConfirm"
+                          :data-rename-id="child.id"
+                        />
+                      </div>
+                      <button v-else class="flex-1 text-left text-base" @click="toggleFolder(child)">
+                        {{ child.name }}
+                      </button>
+                    </div>
+                    <div class="flex-none">
                       <div class="dropdown dropdown-end">
-                        <button tabindex="0" class="btn btn-ghost btn-xs" @click.stop>
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        <button class="btn btn-square btn-ghost">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
                           </svg>
                         </button>
-                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                          <li>
-                            <button @click="($event: MouseEvent) => handleCreateFolder(child)">新建子目录</button>
-                          </li>
-                          <li>
-                            <button @click="($event: MouseEvent) => handleCreateNote(child)">新建笔记</button>
-                          </li>
-                          <li>
-                            <button @click="($event: MouseEvent) => handleRenameFolder(child)">重命名</button>
-                          </li>
-                          <li>
-                            <button @click="($event: MouseEvent) => handleDeleteFolder(child)" class="text-error">删除</button>
-                          </li>
+                        <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                          <li><button @click="handleCreateNote(child)">新建笔记</button></li>
+                          <li><button @click="handleCreateFolder(child)">新建子目录</button></li>
+                          <li><button @click="handleRenameFolder(child)">重命名</button></li>
+                          <li><button @click="handleDeleteFolder(child)" class="text-error">删除</button></li>
                         </ul>
                       </div>
                     </div>
-                    <div class="collapse-content !p-0">
-                      <!-- 笔记列表 -->
-                      <div v-if="child.notes?.length" class="pl-4">
-                        <div v-for="note in child.notes" :key="note.id" 
-                          class="flex items-center gap-2 p-2 hover:bg-base-300 cursor-pointer"
-                          :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
-                          @click="($event: MouseEvent) => handleNoteClick(note)">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  </div>
+
+                  <!-- 子目录的笔记列表 -->
+                  <div v-show="isExpanded(child)" v-if="child.notes?.length" class="pl-4">
+                    <div v-for="note in child.notes" :key="note.id" 
+                      class="navbar bg-base-100 hover:bg-base-200 cursor-pointer"
+                      :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
+                      @click="handleNoteClick(note)">
+                      <div class="flex-1">
+                        <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
-                          <span class="flex-1 truncate">{{ note.title }}</span>
-                          <div class="dropdown dropdown-end">
-                            <button tabindex="0" class="btn btn-ghost btn-xs" @click.stop>
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                              </svg>
-                            </button>
-                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                              <li>
-                                <button @click="($event: MouseEvent) => handleRenameNote(note)">重命名</button>
-                              </li>
-                              <li>
-                                <button @click="($event: MouseEvent) => handleMoveNote(note)">移动</button>
-                              </li>
-                              <li>
-                                <button @click="($event: MouseEvent) => handleDeleteNote(note)" class="text-error">删除</button>
-                              </li>
-                            </ul>
-                          </div>
+                          <input 
+                            type="text" 
+                            v-model="renameValue" 
+                            class="input input-bordered input-sm w-full max-w-xs"
+                            @keyup.enter="handleRenameConfirm"
+                            @keyup.esc="cancelRename"
+                            @blur="handleRenameConfirm"
+                            :data-rename-id="note.id"
+                            @click.stop
+                          />
+                        </div>
+                      </div>
+                      <div class="flex-none">
+                        <div class="dropdown dropdown-end">
+                          <button class="btn btn-square btn-ghost" @click.stop>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                            </svg>
+                          </button>
+                          <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                            <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
+                            <li><button @click.stop="handleMoveNote(note)">移动</button></li>
+                            <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
+                          </ul>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </template>
+
               <!-- 笔记列表 -->
               <div v-if="folder.notes?.length" class="pl-4">
                 <div v-for="note in folder.notes" :key="note.id" 
-                  class="flex items-center gap-2 p-2 hover:bg-base-300 cursor-pointer"
+                  class="navbar bg-base-100 hover:bg-base-200 cursor-pointer"
                   :class="{ 'bg-primary text-primary-content': currentNote?.id === note.id }"
-                  @click="($event: MouseEvent) => handleNoteClick(note)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  <span class="flex-1 truncate">{{ note.title }}</span>
-                  <div class="dropdown dropdown-end">
-                    <button tabindex="0" class="btn btn-ghost btn-xs" @click.stop>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  @click="handleNoteClick(note)">
+                  <div class="flex-1">
+                    <div v-if="renameTarget?.id === note.id" class="flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                    </button>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                      <li>
-                        <button @click="($event: MouseEvent) => handleRenameNote(note)">重命名</button>
-                      </li>
-                      <li>
-                        <button @click="($event: MouseEvent) => handleMoveNote(note)">移动</button>
-                      </li>
-                      <li>
-                        <button @click="($event: MouseEvent) => handleDeleteNote(note)" class="text-error">删除</button>
-                      </li>
-                    </ul>
+                      <input 
+                        type="text" 
+                        v-model="renameValue" 
+                        class="input input-bordered input-sm w-full max-w-xs"
+                        @keyup.enter="handleRenameConfirm"
+                        @keyup.esc="cancelRename"
+                        @blur="handleRenameConfirm"
+                        :data-rename-id="note.id"
+                        @click.stop
+                      />
+                    </div>
+                    <span v-else class="text-lg flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      {{ note.title }}
+                    </span>
+                  </div>
+                  <div class="flex-none">
+                    <div class="dropdown dropdown-end">
+                      <button class="btn btn-square btn-ghost" @click.stop>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                        </svg>
+                      </button>
+                      <ul tabindex="0" class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><button @click.stop="handleRenameNote(note)">重命名</button></li>
+                        <li><button @click.stop="handleMoveNote(note)">移动</button></li>
+                        <li><button @click.stop="handleDeleteNote(note)" class="text-error">删除</button></li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -213,11 +222,11 @@
       <div class="modal-box">
         <h3 class="font-bold text-lg mb-4">移动到</h3>
         <ul class="menu bg-base-200 rounded-box">
-          <li v-for="folder in folderTree" :key="folder.key">
-            <a @click="handleMoveConfirm(folder)">{{ folder.label }}</a>
+          <li v-for="folder in folderTree" :key="folder.id">
+            <button @click="handleMoveConfirm(folder)">{{ folder.name }}</button>
             <ul v-if="folder.children?.length">
-              <li v-for="child in folder.children" :key="child.key">
-                <a @click="handleMoveConfirm(child)">{{ child.label }}</a>
+              <li v-for="child in folder.children" :key="child.id">
+                <button @click="handleMoveConfirm(child)">{{ child.name }}</button>
               </li>
             </ul>
           </li>
@@ -234,31 +243,71 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { Note, Folder } from '../types'
-
-// 搜索
-const searchText = ref('')
+import { ref, onMounted, nextTick } from 'vue'
+import type { Note, Category } from '../types'
 
 // 当前编辑的笔记
 const currentNote = ref<Note | null>(null)
 
 // 目录树数据
-const folderTree = ref<Folder[]>([])
+const folderTree = ref<Category[]>([])
 
 // 重命名相关
 const showRenameModal = ref(false)
 const renameValue = ref('')
-const renameTarget = ref<Folder | Note | null>(null)
+const renameTarget = ref<Category | Note | null>(null)
 
 // 移动笔记相关
 const showMoveModal = ref(false)
 const moveTarget = ref<Note | null>(null)
 
+// 展开的目录ID集合
+const expandedFolders = ref<Set<string>>(new Set())
+
+// 判断目录是否展开
+const isExpanded = (folder: Category) => {
+  return expandedFolders.value.has(folder.id)
+}
+
+// 切换目录展开状态
+const toggleFolder = async (folder: Category) => {
+  if (expandedFolders.value.has(folder.id)) {
+    expandedFolders.value.delete(folder.id)
+  } else {
+    expandedFolders.value.add(folder.id)
+    // 加载笔记列表
+    await handleFolderClick(folder)
+  }
+}
+
 // 处理目录点击
-const handleFolderClick = (folder: Folder) => {
-  // 加载目录下的笔记
-  fetchNotes(folder.key)
+const handleFolderClick = async (folder: Category) => {
+  console.log('点击目录:', folder)
+  try {
+    const response = await fetch(`/api/v1/notes?category_id=${folder.id}`)
+    if (!response.ok) {
+      throw new Error('获取笔记列表失败')
+    }
+    const data = await response.json()
+    console.log('获取到的笔记:', data)
+    
+    // 更新目录树中的笔记列表
+    const updateFolderNotes = (folders: Category[]) => {
+      for (const f of folders) {
+        if (f.id === folder.id) {
+          f.notes = data
+          break
+        }
+        if (f.children) {
+          updateFolderNotes(f.children)
+        }
+      }
+    }
+    updateFolderNotes(folderTree.value)
+  } catch (error) {
+    console.error('获取笔记列表失败:', error)
+    alert('获取笔记列表失败')
+  }
 }
 
 // 处理笔记点击
@@ -267,10 +316,34 @@ const handleNoteClick = (note: Note) => {
   emit('select-note', note)
 }
 
+// 获取下一个可用的目录名
+const getNextFolderName = (currentFolder?: Category): string => {
+  const usedNames = new Set<string>()
+  
+  // 收集当前目录下已使用的名称
+  if (currentFolder) {
+    for (const item of currentFolder.children || []) {
+      usedNames.add(item.name)
+    }
+  } else {
+    for (const item of folderTree.value) {
+      usedNames.add(item.name)
+    }
+  }
+  
+  // 查找可用的名称
+  if (!usedNames.has('未命名')) return '未命名'
+  let i = 1
+  while (usedNames.has(`未命名${i}`)) {
+    i++
+  }
+  return `未命名${i}`
+}
+
 // 创建目录
-const handleCreateFolder = async (parentFolder?: Folder) => {
-  const name = prompt('请输入目录名称')
-  if (!name) return
+const handleCreateFolder = async (parentFolder?: Category) => {
+  console.log('创建目录, 父目录:', parentFolder)
+  const defaultName = getNextFolderName(parentFolder)
 
   try {
     const response = await fetch('/api/v1/categories', {
@@ -279,27 +352,52 @@ const handleCreateFolder = async (parentFolder?: Folder) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        name,
-        parent_id: parentFolder?.key || null
+        name: defaultName,
+        parent_id: parentFolder?.id
       })
     })
-    if (response.ok) {
-      await fetchFolders()
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || '创建目录失败')
+    }
+    
+    const newFolder = await response.json()
+    await fetchFolders()
+    
+    // 自动展开父目录
+    if (parentFolder) {
+      expandedFolders.value.add(parentFolder.id)
+    }
+    
+    // 直接进入重命名状态
+    renameTarget.value = newFolder
+    renameValue.value = defaultName
+    nextTick(() => {
+      const input = document.querySelector(`input[data-rename-id="${newFolder.id}"]`) as HTMLInputElement
+      input?.focus()
+      input?.select()
+    })
+  } catch (error) {
+    console.error('创建目录失败:', error)
+    if (error instanceof Error) {
+      if (error.message.includes('UNIQUE constraint failed')) {
+        alert('目录名称已存在，请尝试其他名称')
+      } else {
+        alert(error.message)
+      }
     } else {
       alert('创建目录失败')
     }
-  } catch (error) {
-    console.error('创建目录失败:', error)
-    alert('创建目录失败')
   }
 }
 
 // 创建笔记
-const handleCreateNote = async (folder?: Folder) => {
-  if (!folder && !confirm('是否在根目录创建笔记？')) return
+const handleCreateNote = async (folder: Category) => {
+  console.log('创建笔记, 所在目录:', folder)
+  const title = prompt('请输入笔记标题')
+  if (!title) return
 
-  const timestamp = new Date().getTime()
-  const title = `新建笔记_${timestamp}`
   try {
     const response = await fetch('/api/v1/notes', {
       method: 'POST',
@@ -309,38 +407,47 @@ const handleCreateNote = async (folder?: Folder) => {
       body: JSON.stringify({
         title,
         content: '',
-        folder_id: folder?.key || null
+        category_id: folder.id
       })
     })
-    if (response.ok) {
-      const note = await response.json()
-      currentNote.value = note
-      emit('select-note', note)
-      await fetchFolders()
-    } else {
-      alert('创建笔记失败')
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || '创建笔记失败')
     }
+
+    const note = await response.json()
+    currentNote.value = note
+    emit('select-note', note)
+    await fetchFolders()
   } catch (error) {
     console.error('创建笔记失败:', error)
-    alert('创建笔记失败')
+    alert(error instanceof Error ? error.message : '创建笔记失败')
   }
 }
 
-// 重命名目录或笔记
-const handleRenameFolder = (folder: Folder) => {
-  renameTarget.value = folder
-  renameValue.value = folder.label
-  showRenameModal.value = true
+// 取消重命名
+const cancelRename = () => {
+  renameTarget.value = null
+  renameValue.value = ''
 }
 
-const handleRenameNote = (note: Note) => {
-  renameTarget.value = note
-  renameValue.value = note.title
-  showRenameModal.value = true
+// 重命名目录或笔记
+const handleRenameFolder = (folder: Category) => {
+  renameTarget.value = folder
+  renameValue.value = folder.name
+  nextTick(() => {
+    const input = document.querySelector(`input[data-rename-id="${folder.id}"]`) as HTMLInputElement
+    input?.focus()
+    input?.select()
+  })
 }
 
 const handleRenameConfirm = async () => {
-  if (!renameTarget.value || !renameValue.value.trim()) return
+  if (!renameTarget.value || !renameValue.value.trim()) {
+    cancelRename()
+    return
+  }
 
   try {
     if ('title' in renameTarget.value) {
@@ -363,7 +470,7 @@ const handleRenameConfirm = async () => {
       }
     } else {
       // 重命名目录
-      const response = await fetch(`/api/v1/categories/${renameTarget.value.key}`, {
+      const response = await fetch(`/api/v1/categories/${renameTarget.value.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -377,7 +484,7 @@ const handleRenameConfirm = async () => {
       }
     }
     await fetchFolders()
-    showRenameModal.value = false
+    cancelRename()
   } catch (error) {
     console.error('重命名失败:', error)
     alert('重命名失败')
@@ -390,7 +497,7 @@ const handleMoveNote = (note: Note) => {
   showMoveModal.value = true
 }
 
-const handleMoveConfirm = async (targetFolder: Folder) => {
+const handleMoveConfirm = async (targetFolder: Category) => {
   if (!moveTarget.value) return
 
   try {
@@ -400,7 +507,7 @@ const handleMoveConfirm = async (targetFolder: Folder) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        folder_id: targetFolder.key
+        category_id: targetFolder.id
       })
     })
     if (response.ok) {
@@ -416,15 +523,30 @@ const handleMoveConfirm = async (targetFolder: Folder) => {
 }
 
 // 删除目录
-const handleDeleteFolder = async (folder: Folder) => {
-  if (!confirm(`确定要删除目录"${folder.label}"吗？目录下的所有笔记也会被删除。`)) return
+const handleDeleteFolder = async (folder: Category) => {
+  if (!confirm(`确定要删除目录"${folder.name}"吗？目录下的所有笔记也会被删除。`)) return
 
   try {
-    const response = await fetch(`/api/v1/categories/${folder.key}`, {
+    const response = await fetch(`/api/v1/categories/${folder.id}`, {
       method: 'DELETE'
     })
     if (response.ok) {
       await fetchFolders()
+      
+      // 从 folderTree 中移除已删除的目录
+      const removeFolder = (folders: Category[]) => {
+        for (let i = 0; i < folders.length; i++) {
+          const f = folders[i]
+          if (f.id === folder.id) {
+            folders.splice(i, 1)
+            break
+          }
+          if (f.children) {
+            removeFolder(f.children)
+          }
+        }
+      }
+      removeFolder(folderTree.value)
     } else {
       const data = await response.json()
       alert(data.error || '删除失败')
@@ -462,7 +584,11 @@ const handleDeleteNote = async (note: Note) => {
 const fetchFolders = async () => {
   try {
     const response = await fetch('/api/v1/categories')
+    if (!response.ok) {
+      throw new Error('获取目录列表失败')
+    }
     const data = await response.json()
+    console.log('目录数据:', data)
     folderTree.value = data
   } catch (error) {
     console.error('获取目录列表失败:', error)
@@ -470,28 +596,15 @@ const fetchFolders = async () => {
   }
 }
 
-// 获取目录下的笔记
-const fetchNotes = async (folderId: string) => {
-  try {
-    const response = await fetch(`/api/v1/notes?folder_id=${folderId}`)
-    const data = await response.json()
-    // 更新目录树中的笔记列表
-    const updateFolderNotes = (folders: Folder[]) => {
-      for (const folder of folders) {
-        if (folder.key === folderId) {
-          folder.notes = data
-          break
-        }
-        if (folder.children) {
-          updateFolderNotes(folder.children)
-        }
-      }
-    }
-    updateFolderNotes(folderTree.value)
-  } catch (error) {
-    console.error('获取笔记列表失败:', error)
-    alert('获取笔记列表失败')
-  }
+// 重命名笔记
+const handleRenameNote = (note: Note) => {
+  renameTarget.value = note
+  renameValue.value = note.title
+  nextTick(() => {
+    const input = document.querySelector(`input[data-rename-id="${note.id}"]`) as HTMLInputElement
+    input?.focus()
+    input?.select()
+  })
 }
 
 // 定义事件
@@ -500,6 +613,7 @@ const emit = defineEmits<{
 }>()
 
 onMounted(() => {
+  console.log('组件已挂载，开始获取目录数据')
   fetchFolders()
 })
 </script> 

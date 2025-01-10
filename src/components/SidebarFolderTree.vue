@@ -4,7 +4,7 @@
       <h2 class="text-lg font-bold">目录</h2>
     </div>
     <div class="flex-1 overflow-y-auto">
-      <folder-tree @select-note="handleNoteSelect" />
+      <FolderTree @select-note="handleNoteSelect" />
     </div>
   </div>
 </template>

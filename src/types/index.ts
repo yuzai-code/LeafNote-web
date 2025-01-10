@@ -3,17 +3,18 @@ export interface Note {
   title: string
   content: string
   created_at: string
-  folder_id: string
+  category_id: string
   tags: Array<{
     id: string
     name: string
   }>
 }
 
-export interface Folder {
-  key: string
-  label: string
-  parentId: string | null
-  children?: Folder[]
+export interface Category {
+  id: string
+  name: string
+  path: string
+  parent_id: string | null
+  children?: Category[]
   notes?: Note[]
 } 

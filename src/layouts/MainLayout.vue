@@ -26,11 +26,17 @@
 
     <!-- 中间侧边栏 -->
     <div v-if="showSidebar" class="w-80 bg-base-100 border-r">
-      <component :is="sidebarComponent" @select-note="handleNoteSelect" />
+      <SidebarFolderTree v-if="route.path === '/notes'" @select-note="handleNoteSelect" />
+      <div v-else-if="route.path === '/tags'" class="h-full p-4">
+        <h2 class="text-lg font-bold">标签</h2>
+      </div>
+      <div v-else-if="route.path === '/categories'" class="h-full p-4">
+        <h2 class="text-lg font-bold">分类</h2>
+      </div>
     </div>
 
     <!-- 主要内容区域 -->
-    <div class="flex-1 bg-base-100 p-4">
+    <div class="flex-1 bg-base-100 p-4 overflow-auto">
       <router-view v-slot="{ Component }">
         <component :is="Component" :current-note="currentNote" @create-note="handleCreateNote" />
       </router-view>
@@ -47,22 +53,9 @@ import type { Note } from '../types'
 const route = useRoute()
 const currentNote = ref<Note | null>(null)
 
-// 根据路由决定是否显示侧边栏和使用哪个组件
+// 根据路由决定是否显示侧边栏
 const showSidebar = computed(() => {
   return route.path === '/notes' || route.path === '/tags' || route.path === '/categories'
-})
-
-const sidebarComponent = computed(() => {
-  switch (route.path) {
-    case '/notes':
-      return SidebarFolderTree
-    case '/tags':
-      return 'div' // 标签侧边栏组件
-    case '/categories':
-      return 'div' // 分类侧边栏组件
-    default:
-      return null
-  }
 })
 
 // 处理笔记选择
@@ -74,4 +67,11 @@ const handleNoteSelect = (note: Note | null) => {
 const handleCreateNote = () => {
   // TODO: 实现创建笔记的逻辑
 }
-</script> 
+</script>
+
+<style scoped>
+.h-screen {
+  height: 100vh;
+  min-height: 100vh;
+}
+</style> 
