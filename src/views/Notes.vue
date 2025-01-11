@@ -156,9 +156,130 @@ const editor = useEditor({
       HTMLAttributes: {
         class: "code-block-wrapper",
       },
-      languageClassPrefix: "language-",
-      exitOnTripleEnter: true,
-      exitOnArrowDown: true,
+    }).extend({
+      addNodeView() {
+        return ({ node, getPos, editor }) => {
+          const container = document.createElement("div");
+          container.classList.add("code-block-wrapper");
+
+          const toolbar = document.createElement("div");
+          toolbar.classList.add("code-block-toolbar");
+
+          // 语言选择下拉框
+          const select = document.createElement("select");
+          select.classList.add("language-select");
+
+          const languages = [
+            { value: "plaintext", label: "纯文本" },
+            { value: "javascript", label: "JavaScript" },
+            { value: "typescript", label: "TypeScript" },
+            { value: "python", label: "Python" },
+            { value: "go", label: "Go" },
+            { value: "rust", label: "Rust" },
+            { value: "java", label: "Java" },
+            { value: "cpp", label: "C++" },
+            { value: "bash", label: "Bash" },
+            { value: "sql", label: "SQL" },
+            { value: "json", label: "JSON" },
+            { value: "xml", label: "XML/HTML" },
+            { value: "yaml", label: "YAML" },
+            { value: "markdown", label: "Markdown" },
+          ];
+
+          languages.forEach((lang) => {
+            const option = document.createElement("option");
+            option.value = lang.value;
+            option.textContent = lang.label;
+            option.selected = node.attrs.language === lang.value;
+            select.appendChild(option);
+          });
+
+          select.addEventListener("change", (event) => {
+            if (typeof getPos === "function") {
+              editor
+                .chain()
+                .focus()
+                .command(({ tr }) => {
+                  const pos = getPos();
+                  tr.setNodeMarkup(pos, undefined, {
+                    ...node.attrs,
+                    language: (event.target as HTMLSelectElement).value,
+                  });
+                  return true;
+                })
+                .run();
+            }
+          });
+
+          // 创建 pre 和 code 元素
+          const pre = document.createElement("pre");
+          const code = document.createElement("code");
+          code.classList.add(`language-${node.attrs.language || "plaintext"}`);
+          pre.appendChild(code);
+
+          // 复制按钮
+          const copyButton = document.createElement("button");
+          copyButton.classList.add("copy-button");
+          copyButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>
+            <span>复制</span>
+          `;
+
+          copyButton.addEventListener("click", () => {
+            const text = code.textContent || "";
+            navigator.clipboard.writeText(text).then(() => {
+              copyButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+                <span>已复制</span>
+              `;
+              copyButton.classList.add("copied");
+
+              setTimeout(() => {
+                copyButton.innerHTML = `
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                  </svg>
+                  <span>复制</span>
+                `;
+                copyButton.classList.remove("copied");
+              }, 2000);
+            });
+          });
+
+          // 先添加语言选择
+          toolbar.appendChild(select);
+
+          // 添加中间的空白占位
+          const spacer = document.createElement("div");
+          spacer.classList.add("toolbar-spacer");
+          toolbar.appendChild(spacer);
+
+          // 最后添加复制按钮
+          toolbar.appendChild(copyButton);
+
+          container.appendChild(toolbar);
+          container.appendChild(pre);
+
+          return {
+            dom: container,
+            contentDOM: code,
+            update: (updatedNode) => {
+              if (updatedNode.type !== node.type) return false;
+
+              if (updatedNode.attrs.language !== node.attrs.language) {
+                code.className = `language-${updatedNode.attrs.language || "plaintext"}`;
+                select.value = updatedNode.attrs.language || "plaintext";
+              }
+
+              return true;
+            },
+          };
+        };
+      },
     }),
     Placeholder.configure({
       placeholder:
@@ -546,16 +667,6 @@ onBeforeUnmount(() => {
   border: 1px solid #e9ecef;
   position: relative;
 
-  &::before {
-    content: attr(data-language);
-    position: absolute;
-    top: 0.25em;
-    right: 0.5em;
-    font-size: 0.75em;
-    color: #868e96;
-    text-transform: uppercase;
-  }
-
   pre {
     margin: 0;
     padding: 1em;
@@ -570,6 +681,76 @@ onBeforeUnmount(() => {
     background: none;
     padding: 0;
     border-radius: 0;
+  }
+}
+
+.code-block-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em;
+  background: #f1f3f5;
+  border-bottom: 1px solid #e9ecef;
+  border-top-left-radius: 0.5em;
+  border-top-right-radius: 0.5em;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.language-select {
+  height: 1.8em;
+  padding: 0 0.5em;
+  border: 1px solid #ced4da;
+  border-radius: 0.25em;
+  background: white;
+  font-size: 0.875em;
+  color: #495057;
+  cursor: pointer;
+  min-width: 120px;
+
+  &:hover {
+    border-color: #adb5bd;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
+  }
+}
+
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  height: 1.8em;
+  padding: 0 0.75em;
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: 0.25em;
+  color: #495057;
+  font-size: 0.875em;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 72px;
+  justify-content: center;
+
+  svg {
+    width: 1em;
+    height: 1em;
+  }
+
+  &:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+  }
+
+  &.copied {
+    background: #51cf66;
+    border-color: #40c057;
+    color: white;
   }
 }
 
