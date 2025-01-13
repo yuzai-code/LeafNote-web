@@ -28,7 +28,7 @@
     </div -->
 
     <!-- 主要内容区域 -->
-    <div class="flex-1 bg-base-100 p-4 overflow-auto">
+    <div class="flex-1 bg-base-100">
       <router-view v-slot="{ Component }">
         <component :is="Component" :current-note="currentNote" @create-note="handleCreateNote" />
       </router-view>

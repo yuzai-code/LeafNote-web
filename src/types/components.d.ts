@@ -13,9 +13,11 @@ declare module 'vue' {
     FolderSelect: typeof import('./../components/FolderSelect.vue')['default']
     FolderTree: typeof import('./../components/FolderTree.vue')['default']
     MainLayout: typeof import('./../layouts/MainLayout.vue')['default']
+    MilkdownEditor: typeof import('./../components/MilkdownEditor.vue')['default']
     NoteItem: typeof import('./../components/NoteItem.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SidebarFolderTree: typeof import('./../components/SidebarFolderTree.vue')['default']
+    VditorEditor: typeof import('./../components/VditorEditor.vue')['default']
   }
 }
