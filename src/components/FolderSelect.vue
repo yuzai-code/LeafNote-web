@@ -49,11 +49,46 @@
                     class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-40"
                     @click.stop
                   >
-                    <li><button class="w-full text-center justify-center" @click="handleCreateNote">新建笔记</button></li>
-                    <li><button class="w-full text-center justify-center" @click="handleCreateFolder">新建子目录</button></li>
-                    <li><button class="w-full text-center justify-center" @click="handleRename">重命名</button></li>
-                    <li><button class="w-full text-center justify-center" @click="handleMove">移动</button></li>
-                    <li><button class="w-full text-center justify-center text-error" @click="handleDelete">删除</button></li>
+                    <li>
+                      <button
+                        class="w-full text-center justify-center"
+                        @click="handleCreateNote"
+                      >
+                        新建笔记
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="w-full text-center justify-center"
+                        @click="handleCreateFolder"
+                      >
+                        新建子目录
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="w-full text-center justify-center"
+                        @click="handleRename"
+                      >
+                        重命名
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="w-full text-center justify-center"
+                        @click="handleMove"
+                      >
+                        移动
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="w-full text-center justify-center text-error"
+                        @click="handleDelete"
+                      >
+                        删除
+                      </button>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -235,7 +270,8 @@ onUnmounted(() => {
   max-width: 12rem !important;
 }
 
-.dropdown-content.menu :where(li:not(.menu-title) > *:not(ul):not(details):not(.menu-title)),
+.dropdown-content.menu
+  :where(li:not(.menu-title) > *:not(ul):not(details):not(.menu-title)),
 .dropdown-content.menu :where(li:not(.menu-title) > details > summary) {
   padding-left: 1rem;
   padding-right: 1rem;
