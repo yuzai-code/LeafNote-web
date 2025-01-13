@@ -100,7 +100,7 @@
           </button>
           <ul
             v-if="showDropdown"
-            class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-52"
+            class="dropdown-content z-[1] menu menu-sm p-2 shadow bg-base-100 rounded-box w-28"
             @click.stop
           >
             <li><button @click="$emit('create-note')">新建笔记</button></li>
