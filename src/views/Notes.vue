@@ -151,8 +151,6 @@ const editor = useEditor({
       HTMLAttributes: {
         class: "code-block-wrapper",
       },
-      editable: true,
-      selectable: true,
     }).extend({
       addKeyboardShortcuts() {
         return {
@@ -355,8 +353,6 @@ const editor = useEditor({
       HTMLAttributes: {
         class: "flex items-start my-1 task-item",
       },
-      markdown: true,
-      onReadOnlyChecked: true,
     }),
     HorizontalRule.configure({
       HTMLAttributes: {
