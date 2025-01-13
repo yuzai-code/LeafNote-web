@@ -343,16 +343,9 @@ const editor = useEditor({
         class: "border border-gray-300 px-4 py-2",
       },
     }),
-    TaskList.configure({
-      HTMLAttributes: {
-        class: "not-prose pl-2 task-list",
-      },
-    }),
+    TaskList,
     TaskItem.configure({
       nested: true,
-      HTMLAttributes: {
-        class: "flex items-start my-1 task-item",
-      },
     }),
     HorizontalRule.configure({
       HTMLAttributes: {
@@ -814,55 +807,33 @@ onBeforeUnmount(() => {
   padding-left: 0;
 }
 
-.task-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+/* Task list specific styles */
+ul[data-type="taskList"] {
+  list-style: none;
+  margin-left: 0;
+  padding: 0;
 
-  > label {
+  li {
+    align-items: flex-start;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-  }
 
-  > div {
-    flex: 1;
+    > label {
+      flex: 0 0 auto;
+      margin-right: 0.5rem;
+      user-select: none;
+    }
+
+    > div {
+      flex: 1 1 auto;
+    }
   }
 
   input[type="checkbox"] {
-    margin: 0.25rem 0 0;
     cursor: pointer;
   }
-}
 
-/* 确保任务列表在编辑器中正确显示 */
-.ProseMirror {
   ul[data-type="taskList"] {
-    list-style: none;
-    padding: 0;
-
-    li[data-type="taskItem"] {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-
-      > label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-      }
-
-      > div {
-        flex: 1;
-      }
-
-      input[type="checkbox"] {
-        margin: 0.25rem 0 0;
-        cursor: pointer;
-      }
-    }
+    margin: 0;
   }
 }
 </style>
