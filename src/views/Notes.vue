@@ -88,6 +88,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import FolderTree from "../components/FolderTree.vue";
 import type { Note } from "../types";
+import { TextSelection } from "@tiptap/pm/state";
 
 // 创建代码高亮实例并注册语言
 const lowlight = createLowlight(common);
@@ -161,7 +162,28 @@ const editor = useEditor({
       HTMLAttributes: {
         class: "code-block-wrapper",
       },
+      editable: true,
+      selectable: true,
     }).extend({
+      addKeyboardShortcuts() {
+        return {
+          "Mod-a": ({ editor }) => {
+            const { state } = editor;
+            const { from } = state.selection;
+            const $from = state.doc.resolve(from);
+
+            // 检查当前节点是否是代码块
+            if ($from.parent.type.name === "codeBlock") {
+              const start = $from.start();
+              const end = $from.end();
+
+              editor.commands.setTextSelection({ from: start, to: end });
+              return true;
+            }
+            return false;
+          },
+        };
+      },
       addNodeView() {
         return ({ node, getPos, editor }) => {
           const container = document.createElement("div");
@@ -269,6 +291,33 @@ const editor = useEditor({
           container.appendChild(toolbar);
           container.appendChild(pre);
 
+          // 在创建 code 元素后添加事件监听
+          code.addEventListener("keydown", (e) => {
+            // 检测 Ctrl+A 或 Command+A (Mac)
+            if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+              e.preventDefault(); // 阻止默认全选行为
+              e.stopPropagation(); // 阻止事件冒泡
+
+              // 确保焦点在代码块内
+              if (document.activeElement === code) {
+                // 创建范围选择
+                const range = document.createRange();
+                range.selectNodeContents(code);
+
+                // 获取选区对象并应用选择
+                const selection = window.getSelection();
+                if (selection) {
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
+              }
+            }
+          });
+
+          // 添加点击事件以确保代码块可以获得焦点
+          code.setAttribute("tabindex", "0"); // 使元素可以获得焦点
+          code.style.outline = "none"; // 去除默认的焦点轮廓
+
           return {
             dom: container,
             contentDOM: code,
@@ -324,6 +373,30 @@ const editor = useEditor({
   editorProps: {
     attributes: {
       class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none",
+    },
+    handleKeyDown: (view, event) => {
+      // 检查是否是 Ctrl+A/Cmd+A
+      if ((event.ctrlKey || event.metaKey) && event.key === "a") {
+        const { state } = view;
+        const { from } = state.selection;
+        const $from = state.doc.resolve(from);
+
+        // 检查当前节点是否是代码块
+        const node = $from.parent;
+        if (node.type.name === "codeBlock") {
+          event.preventDefault();
+
+          // 选择整个代码块的内容
+          const start = $from.start();
+          const end = $from.end();
+
+          view.dispatch(
+            view.state.tr.setSelection(TextSelection.create(view.state.doc, start, end))
+          );
+          return true;
+        }
+      }
+      return false;
     },
   },
   onUpdate: ({ editor }) => {
