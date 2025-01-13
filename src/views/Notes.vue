@@ -1,12 +1,12 @@
 <template>
   <div class="flex h-screen">
     <!-- 左侧目录树 -->
-    <div class="w-64 border-r">
+    <div class="w-64 border-r fixed h-screen overflow-y-auto bg-base-100">
       <FolderTree ref="folderTreeRef" @select-note="handleSelectNote" />
     </div>
 
-    <!-- 右侧编辑区 -->
-    <div class="flex-1 flex flex-col bg-base-100" v-if="currentNote">
+    <!-- 右侧编辑区，添加左边距以避免被固定的目录树遮挡 -->
+    <div class="flex-1 flex flex-col bg-base-100 ml-64" v-if="currentNote">
       <div class="p-4 border-b">
         <input
           v-model="currentNote.title"
@@ -17,21 +17,10 @@
         />
       </div>
       <div class="flex-1 editor-container">
-        <div class="menu-bar border-b p-2">
-          <button
-            v-for="item in menuItems"
-            :key="item.icon"
-            @click="item.action"
-            :class="{ 'is-active': item.isActive?.() }"
-            class="btn btn-sm btn-ghost mx-1"
-          >
-            <span class="material-icons text-base">{{ item.icon }}</span>
-          </button>
-        </div>
         <editor-content :editor="editor" class="prose max-w-none p-4" />
       </div>
     </div>
-    <div v-else class="flex-1 flex items-center justify-center">
+    <div v-else class="flex-1 flex items-center justify-center ml-64">
       <div class="text-center">
         <h3 class="text-lg font-bold mb-4">选择或创建一个笔记开始编辑</h3>
         <button class="btn btn-primary" @click="handleCreateNote">
@@ -358,11 +347,16 @@ const editor = useEditor({
     }),
     TaskList.configure({
       HTMLAttributes: {
-        class: "not-prose pl-2",
+        class: "not-prose pl-2 task-list",
       },
     }),
     TaskItem.configure({
       nested: true,
+      HTMLAttributes: {
+        class: "flex items-start my-1 task-item",
+      },
+      markdown: true,
+      onReadOnlyChecked: true,
     }),
     HorizontalRule.configure({
       HTMLAttributes: {
@@ -406,127 +400,6 @@ const editor = useEditor({
     }
   },
 });
-
-// 编辑器菜单项
-const menuItems = [
-  {
-    icon: "format_bold",
-    action: () => editor.value?.chain().focus().toggleBold().run(),
-    isActive: () => editor.value?.isActive("bold"),
-  },
-  {
-    icon: "format_italic",
-    action: () => editor.value?.chain().focus().toggleItalic().run(),
-    isActive: () => editor.value?.isActive("italic"),
-  },
-  {
-    icon: "format_strikethrough",
-    action: () => editor.value?.chain().focus().toggleStrike().run(),
-    isActive: () => editor.value?.isActive("strike"),
-  },
-  {
-    icon: "format_list_bulleted",
-    action: () => editor.value?.chain().focus().toggleBulletList().run(),
-    isActive: () => editor.value?.isActive("bulletList"),
-  },
-  {
-    icon: "format_list_numbered",
-    action: () => editor.value?.chain().focus().toggleOrderedList().run(),
-    isActive: () => editor.value?.isActive("orderedList"),
-  },
-  {
-    icon: "title",
-    action: () => {
-      const level = window.prompt("输入标题级别 (1-6):", "1");
-      if (level && /^[1-6]$/.test(level)) {
-        const headingLevel = parseInt(level) as 1 | 2 | 3 | 4 | 5 | 6;
-        editor.value?.chain().focus().toggleHeading({ level: headingLevel }).run();
-      }
-    },
-    isActive: () =>
-      [1, 2, 3, 4, 5, 6].some((level) =>
-        editor.value?.isActive("heading", { level: level as 1 | 2 | 3 | 4 | 5 | 6 })
-      ),
-  },
-  {
-    icon: "code",
-    action: () => {
-      const languages = [
-        { value: "plaintext", label: "纯文本" },
-        { value: "javascript", label: "JavaScript" },
-        { value: "typescript", label: "TypeScript" },
-        { value: "python", label: "Python" },
-        { value: "go", label: "Go" },
-        { value: "rust", label: "Rust" },
-        { value: "java", label: "Java" },
-        { value: "cpp", label: "C++" },
-        { value: "bash", label: "Bash" },
-        { value: "sql", label: "SQL" },
-        { value: "json", label: "JSON" },
-        { value: "xml", label: "XML/HTML" },
-        { value: "yaml", label: "YAML" },
-        { value: "markdown", label: "Markdown" },
-      ];
-      const language = window.prompt(
-        `输入代码语言，支持：\n${languages
-          .map((lang) => `${lang.label} (${lang.value})`)
-          .join("\n")}`,
-        "plaintext"
-      );
-      if (language) {
-        editor.value
-          ?.chain()
-          .focus()
-          .toggleCodeBlock({ language: language.toLowerCase() })
-          .run();
-      }
-    },
-    isActive: () => editor.value?.isActive("codeBlock"),
-  },
-  {
-    icon: "link",
-    action: () => {
-      const url = window.prompt("输入链接URL");
-      if (url) {
-        editor.value?.chain().focus().setLink({ href: url }).run();
-      }
-    },
-    isActive: () => editor.value?.isActive("link"),
-  },
-  {
-    icon: "format_quote",
-    action: () => editor.value?.chain().focus().toggleBlockquote().run(),
-    isActive: () => editor.value?.isActive("blockquote"),
-  },
-  {
-    icon: "table_chart",
-    action: () =>
-      editor.value
-        ?.chain()
-        .focus()
-        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-        .run(),
-    isActive: () => editor.value?.isActive("table"),
-  },
-  {
-    icon: "check_box",
-    action: () => editor.value?.chain().focus().toggleTaskList().run(),
-    isActive: () => editor.value?.isActive("taskList"),
-  },
-  {
-    icon: "horizontal_rule",
-    action: () => editor.value?.chain().focus().setHorizontalRule().run(),
-  },
-  {
-    icon: "image",
-    action: () => {
-      const url = window.prompt("输入图片URL");
-      if (url) {
-        editor.value?.chain().focus().setImage({ src: url }).run();
-      }
-    },
-  },
-];
 
 // 监听笔记变化，更新编辑器内容
 watch(currentNote, (newNote) => {
@@ -936,6 +809,64 @@ onBeforeUnmount(() => {
 
   p {
     margin: 0;
+  }
+}
+
+/* 任务列表样式 */
+.task-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+
+  > label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  > div {
+    flex: 1;
+  }
+
+  input[type="checkbox"] {
+    margin: 0.25rem 0 0;
+    cursor: pointer;
+  }
+}
+
+/* 确保任务列表在编辑器中正确显示 */
+.ProseMirror {
+  ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+
+    li[data-type="taskItem"] {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      > label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+      }
+
+      > div {
+        flex: 1;
+      }
+
+      input[type="checkbox"] {
+        margin: 0.25rem 0 0;
+        cursor: pointer;
+      }
+    }
   }
 }
 </style>
