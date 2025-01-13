@@ -136,6 +136,11 @@ const editor = useEditor({
         keepMarks: true,
         keepAttributes: false,
       },
+      blockquote: {
+        HTMLAttributes: {
+          class: "border-l-4 border-gray-300 pl-4 my-4",
+        },
+      },
       codeBlock: false,
     }),
     Typography,
@@ -847,5 +852,17 @@ onBeforeUnmount(() => {
 
 .hljs-strong {
   font-weight: bold;
+}
+
+.ProseMirror blockquote {
+  margin: 1em 0;
+  padding-left: 1em;
+  border-left: 4px solid #e5e7eb;
+  color: #6b7280;
+  font-style: italic;
+
+  p {
+    margin: 0;
+  }
 }
 </style>
