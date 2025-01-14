@@ -120,6 +120,13 @@ watch(
 onBeforeUnmount(() => {
   editor.value?.destroy();
 });
+
+// 暴露方法给父组件
+defineExpose({
+  focus: () => {
+    editor.value?.commands.focus("end");
+  },
+});
 </script>
 
 <style lang="scss">
