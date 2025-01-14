@@ -1,3 +1,5 @@
+@use "variables" as *;
+
 // 重置样式
 * {
   box-sizing: border-box;
@@ -25,7 +27,7 @@
 }
 
 // 暗色主题滚动条
-.n-config-provider.n-config-provider--dark {
+.dark {
   ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -46,35 +48,39 @@
   opacity: 0;
 }
 
-// 工具类
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
-.gap-4 {
-  gap: 16px;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.h-full {
+html,
+body {
   height: 100%;
+  background-color: var(--bg-base-100);
+  color: var(--text-base-content);
+}
+
+#app {
+  height: 100%;
+}
+
+.btn {
+  border-radius: $border-radius-lg;
+  
+  &-sm {
+    padding: $spacing-xs $spacing-sm;
+    font-size: 0.875rem;
+  }
+}
+
+.select {
+  border-radius: $border-radius-lg;
+  
+  &-sm {
+    padding: $spacing-xs $spacing-sm;
+    font-size: 0.875rem;
+  }
+}
+
+.prose {
+  max-width: none;
+  
+  pre {
+    margin: $spacing-md 0;
+  }
 } 
