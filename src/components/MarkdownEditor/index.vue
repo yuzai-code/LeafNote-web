@@ -1,210 +1,60 @@
 <template>
-  <div class="markdown-editor">
-    <!-- 编辑区域 -->
-    <EditorContent :editor="editor" class="editor-content" />
-
-    <!-- 悬浮菜单 -->
-    <MenuBubble :editor="editor" v-if="editor" />
-  </div>
+  <VueEditor :editor="editor" />
 </template>
 
 <script setup lang="ts">
-import { useEditor, EditorContent } from "@tiptap/vue-3";
-import { Extension } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import Blockquote from "@tiptap/extension-blockquote";
-import { onBeforeUnmount, watch, ref } from "vue";
-import type { Editor as EditorType } from "@tiptap/core";
-import MenuBubble from "./components/MenuBubble.vue";
-import CustomImage from "./extensions/CustomImage";
-import CustomCode from "./extensions/CustomCode";
+// core
+import { VueEditor, useEditor } from "@milkdown/vue";
+import { Editor, rootCtx, defaultValueCtx } from "@milkdown/core";
+import { nord } from "@milkdown/theme-nord";
+import { commonmark } from "@milkdown/preset-commonmark";
 
-// 创建一个扩展来处理空列表项的退出
-const ExitListOnEnter = Extension.create({
-  name: "exitListOnEnter",
-  addKeyboardShortcuts() {
-    return {
-      Enter: ({ editor }: { editor: EditorType }) => {
-        const { state } = editor;
-        const { selection } = state;
-        const { $from } = selection;
+// plugin
+import { emoji } from "@milkdown/plugin-emoji";
+import { menu } from "@milkdown/plugin-menu";
+import { slash } from "@milkdown/plugin-slash";
+import { history } from "@milkdown/plugin-history";
+import { prism } from "@milkdown/plugin-prism";
+import { tooltip } from "@milkdown/plugin-tooltip";
+import { indent } from "@milkdown/plugin-indent";
+import { trailing } from "@milkdown/plugin-trailing";
+import { upload } from "@milkdown/plugin-upload";
+import { cursor } from "@milkdown/plugin-cursor";
+import { clipboard } from "@milkdown/plugin-clipboard";
+import { listener, listenerCtx } from "@milkdown/plugin-listener";
 
-        if (!selection.empty) {
-          return false;
-        }
-
-        const node = $from.node();
-        const parent = $from.parent;
-
-        if (node.type.name === "listItem" && parent.textContent === "") {
-          return editor.commands.liftListItem("listItem");
-        }
-
-        return false;
-      },
-    };
-  },
-});
+import "prismjs/themes/prism.css";
 
 const props = defineProps<{
-  content?: string;
-  placeholder?: string;
-  autofocus?: boolean;
-  readonly?: boolean;
+  modelValue: string;
 }>();
 
 const emit = defineEmits<{
-  "update:content": [content: string];
-  save: [content: string];
+  (e: "update:modelValue", value: string): void;
 }>();
 
-// 初始化编辑器
-const editor = useEditor({
-  content: props.content,
-  autofocus: props.autofocus,
-  editable: !props.readonly,
-  extensions: [
-    StarterKit.configure({
-      heading: {
-        levels: [1, 2, 3, 4, 5, 6],
-      },
-      bulletList: {
-        keepMarks: true,
-        keepAttributes: false,
-      },
-      orderedList: {
-        keepMarks: true,
-        keepAttributes: false,
-      },
-      blockquote: false,
-      codeBlock: false,
-      code: false,
-    }),
-    Blockquote.configure({
-      HTMLAttributes: {
-        class: "border-l-4 border-gray-200 pl-4 my-2",
-      },
-    }),
-    Placeholder.configure({
-      placeholder: props.placeholder || "开始编写你的笔记...",
-    }),
-    TaskList,
-    TaskItem.configure({
-      nested: true,
-    }),
-    CustomImage,
-    ExitListOnEnter,
-  ],
-  onUpdate: ({ editor }) => {
-    const content = editor.getHTML();
-    emit("update:content", content);
-    emit("save", content);
-  },
-});
-
-// 监听内容变化
-watch(
-  () => props.content,
-  (newContent) => {
-    if (editor.value && newContent !== editor.value.getHTML()) {
-      editor.value.commands.setContent(newContent || "", false);
-    }
-  },
-  { immediate: true }
+const { editor } = useEditor((root) =>
+  Editor.make()
+    .config((ctx) => {
+      ctx.set(rootCtx, root);
+      ctx.set(defaultValueCtx, props.modelValue);
+      ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
+        emit("update:modelValue", markdown);
+      });
+    })
+    .use(nord)
+    .use(emoji)
+    .use(slash)
+    .use(commonmark)
+    .use(menu)
+    .use(history)
+    .use(prism)
+    .use(tooltip)
+    .use(indent)
+    .use(trailing)
+    .use(upload)
+    .use(cursor)
+    .use(clipboard)
+    .use(listener)
 );
-
-// 组件销毁时清理编辑器
-onBeforeUnmount(() => {
-  editor.value?.destroy();
-});
-
-// 暴露方法给父组件
-defineExpose({
-  focus: () => {
-    editor.value?.commands.focus("end");
-  },
-});
 </script>
-
-<style lang="scss">
-.markdown-editor {
-  .editor-content {
-    @apply p-4 min-h-[300px] prose max-w-none;
-
-    .ProseMirror {
-      @apply outline-none;
-
-      > * + * {
-        @apply mt-2;
-      }
-
-      p {
-        @apply my-0 leading-normal max-w-none;
-      }
-
-      ul,
-      ol {
-        @apply pl-4 my-0 max-w-none;
-
-        li {
-          @apply mt-0 mb-0;
-        }
-      }
-
-      // 任务列表样式
-      ul[data-type="taskList"] {
-        @apply list-none pl-0 max-w-none;
-
-        li {
-          @apply flex gap-2 mt-0;
-
-          > label {
-            @apply cursor-pointer;
-          }
-
-          > div {
-            @apply flex-1;
-          }
-        }
-      }
-
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        @apply leading-tight mt-4 mb-2 max-w-none;
-      }
-
-      blockquote {
-        @apply pl-4 border-l-4 border-gray-200 my-2 not-italic max-w-none;
-        &::before,
-        &::after {
-          content: none !important;
-        }
-        quotes: none !important;
-      }
-
-      hr {
-        @apply border-t-2 border-gray-200 my-4;
-      }
-
-      img {
-        @apply max-w-full h-auto rounded-lg;
-      }
-
-      table {
-        @apply w-full border-collapse my-4 max-w-none;
-        td,
-        th {
-          @apply border p-2;
-        }
-      }
-    }
-  }
-}
-</style>

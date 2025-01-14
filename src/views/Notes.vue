@@ -52,7 +52,7 @@
       </div>
 
       <!-- 编辑器容器 -->
-      <div class="flex-1 overflow-auto flex flex-col">
+      <div class="flex-1 overflow-auto">
         <div
           :class="{
             'max-w-3xl mx-auto px-8 w-full': !isWideLayout,
@@ -61,20 +61,10 @@
         >
           <MarkdownEditor
             ref="editorRef"
-            v-model:content="currentNote.content"
-            placeholder="开始编写你的笔记..."
-            @save="handleContentChange"
+            v-model="currentNote.content"
+            @update:modelValue="handleContentChange"
           />
         </div>
-        <!-- 添加一个占位区域，点击时聚焦到编辑器 -->
-        <div
-          class="flex-1 min-h-[200px] cursor-text"
-          :class="{
-            'max-w-3xl mx-auto px-8 w-full': !isWideLayout,
-            'px-4 w-full': isWideLayout,
-          }"
-          @click="handleEmptyAreaClick"
-        ></div>
       </div>
     </div>
 
@@ -226,10 +216,5 @@ const handleCreateNote = async () => {
     console.error("创建笔记失败:", error);
     alert("创建笔记失败");
   }
-};
-
-// 处理点击空白区域
-const handleEmptyAreaClick = () => {
-  editorRef.value?.focus();
 };
 </script>
