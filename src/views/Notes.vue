@@ -25,8 +25,19 @@
                 @click="isWideLayout = !isWideLayout"
                 title="切换宽窄布局"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 8h16M4 16h16"
+                  />
                 </svg>
               </button>
               <div class="text-sm text-gray-500">
@@ -42,7 +53,12 @@
 
       <!-- 编辑器容器 -->
       <div class="flex-1 overflow-auto flex flex-col">
-        <div :class="{ 'max-w-3xl mx-auto px-8 w-full': !isWideLayout, 'px-4 w-full': isWideLayout }">
+        <div
+          :class="{
+            'max-w-3xl mx-auto px-8 w-full': !isWideLayout,
+            'px-4 w-full': isWideLayout,
+          }"
+        >
           <MarkdownEditor
             ref="editorRef"
             v-model:content="currentNote.content"
@@ -51,9 +67,12 @@
           />
         </div>
         <!-- 添加一个占位区域，点击时聚焦到编辑器 -->
-        <div 
-          class="flex-1 min-h-[200px] cursor-text" 
-          :class="{ 'max-w-3xl mx-auto px-8 w-full': !isWideLayout, 'px-4 w-full': isWideLayout }"
+        <div
+          class="flex-1 min-h-[200px] cursor-text"
+          :class="{
+            'max-w-3xl mx-auto px-8 w-full': !isWideLayout,
+            'px-4 w-full': isWideLayout,
+          }"
           @click="handleEmptyAreaClick"
         ></div>
       </div>
