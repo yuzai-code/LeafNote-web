@@ -16,9 +16,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Blockquote from "@tiptap/extension-blockquote";
-import { onBeforeUnmount, watch } from "vue";
+import { onBeforeUnmount, watch, ref } from "vue";
 import type { Editor as EditorType } from "@tiptap/core";
-import Toolbar from "./components/Toolbar.vue";
 import MenuBubble from "./components/MenuBubble.vue";
 import CustomImage from "./extensions/CustomImage";
 import CustomCode from "./extensions/CustomCode";
@@ -81,6 +80,8 @@ const editor = useEditor({
         keepAttributes: false,
       },
       blockquote: false,
+      codeBlock: false,
+      code: false,
     }),
     Blockquote.configure({
       HTMLAttributes: {
@@ -95,7 +96,6 @@ const editor = useEditor({
       nested: true,
     }),
     CustomImage,
-    CustomCode,
     ExitListOnEnter,
   ],
   onUpdate: ({ editor }) => {
@@ -178,18 +178,6 @@ defineExpose({
       h5,
       h6 {
         @apply leading-tight mt-4 mb-2 max-w-none;
-      }
-
-      code {
-        @apply bg-gray-100 text-gray-800 px-1 rounded;
-      }
-
-      pre {
-        @apply bg-gray-900 text-white p-4 rounded-lg my-2 max-w-none;
-
-        code {
-          @apply bg-transparent text-inherit p-0;
-        }
       }
 
       blockquote {
