@@ -899,4 +899,28 @@ defineExpose({
 .slide-leave-from {
   height: var(--content-height);
 }
+
+/* 目录树内容区域滚动条 */
+.flex-1.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.flex-1.overflow-y-auto::-webkit-scrollbar-track {
+  background: hsl(var(--b2));
+}
+
+.flex-1.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: hsl(var(--bc, 0.3));
+  border-radius: 4px;
+}
+
+.flex-1.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--bc, 0.5));
+}
+
+/* Firefox 支持 */
+.flex-1.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--bc, 0.3)) hsl(var(--b2));
+}
 </style>

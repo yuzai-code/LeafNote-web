@@ -456,38 +456,17 @@ onBeforeUnmount(() => {
 }
 
 .vditor-content::-webkit-scrollbar-track {
-  background: transparent !important;
+  background: hsl(var(--b2)) !important;
 }
 
 .vditor-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08) !important;
+  background: hsl(var(--bc, 0.3)) !important;
   border-radius: 4px !important;
   transition: all 0.2s ease !important;
 }
 
 .vditor-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15) !important;
-}
-
-/* 大纲滚动条样式 */
-.vditor-outline::-webkit-scrollbar {
-  width: 3px !important;
-  height: 3px !important;
-  background: transparent !important;
-}
-
-.vditor-outline::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-
-.vditor-outline::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08) !important;
-  border-radius: 3px !important;
-  transition: all 0.2s ease !important;
-}
-
-.vditor-outline::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15) !important;
+  background: hsl(var(--bc, 0.5)) !important;
 }
 
 /* 代码块滚动条样式 */
@@ -500,18 +479,48 @@ onBeforeUnmount(() => {
 
 .vditor-ir pre::-webkit-scrollbar-track,
 .vditor-reset pre::-webkit-scrollbar-track {
-  background: transparent !important;
+  background: hsl(var(--b2)) !important;
 }
 
 .vditor-ir pre::-webkit-scrollbar-thumb,
 .vditor-reset pre::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08) !important;
+  background: hsl(var(--bc, 0.3)) !important;
   border-radius: 4px !important;
   transition: all 0.2s ease !important;
 }
 
 .vditor-ir pre::-webkit-scrollbar-thumb:hover,
 .vditor-reset pre::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15) !important;
+  background: hsl(var(--bc, 0.5)) !important;
+}
+
+/* 大纲滚动条样式 */
+.vditor-outline::-webkit-scrollbar {
+  width: 4px !important;
+  height: 4px !important;
+  background: transparent !important;
+}
+
+.vditor-outline::-webkit-scrollbar-track {
+  background: hsl(var(--b2)) !important;
+}
+
+.vditor-outline::-webkit-scrollbar-thumb {
+  background: hsl(var(--bc, 0.3)) !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.vditor-outline::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--bc, 0.5)) !important;
+}
+
+/* Firefox 支持 */
+.vditor-content,
+.vditor-ir pre,
+.vditor-reset pre,
+.vditor-outline {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--bc, 0.3)) hsl(var(--b2));
 }
 </style>

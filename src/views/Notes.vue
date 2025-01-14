@@ -148,4 +148,27 @@ const handleCreateNote = async () => {
   padding: 1rem;
   overflow: hidden;
 }
+/* 左侧目录树滚动条样式 */
+.w-64.border-r::-webkit-scrollbar {
+  width: 4px;
+}
+
+.w-64.border-r::-webkit-scrollbar-track {
+  background: hsl(var(--b2));
+}
+
+.w-64.border-r::-webkit-scrollbar-thumb {
+  background: hsl(var(--bc, 0.3));
+  border-radius: 4px;
+}
+
+.w-64.border-r::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--bc, 0.5));
+}
+
+/* Firefox 滚动条样式 */
+.w-64.border-r {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--bc, 0.3)) hsl(var(--b2));
+}
 </style>
