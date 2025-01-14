@@ -8,23 +8,47 @@
     <!-- 右侧编辑区 -->
     <div class="flex-1 flex flex-col bg-base-100 ml-64" v-if="currentNote">
       <!-- 标题栏 -->
-      <div class="p-4 border-b">
-        <input
-          v-model="currentNote.title"
-          type="text"
-          placeholder="笔记标题"
-          class="input input-lg w-full"
-          @blur="handleSaveNote"
-        />
+      <div class="border-b">
+        <div :class="{ 'max-w-3xl mx-auto px-8': !isWideLayout, 'px-4': isWideLayout }">
+          <div class="py-4 flex items-center justify-between">
+            <input
+              v-model="currentNote.title"
+              type="text"
+              placeholder="笔记标题"
+              class="input input-lg flex-1"
+              @blur="handleSaveNote"
+            />
+            <div class="ml-4 flex items-center gap-4">
+              <button
+                class="btn btn-ghost btn-sm"
+                :class="{ 'btn-active': isWideLayout }"
+                @click="isWideLayout = !isWideLayout"
+                title="切换宽窄布局"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                </svg>
+              </button>
+              <div class="text-sm text-gray-500">
+                <span v-if="isSaving">正在保存...</span>
+                <span v-else-if="lastSaveTime">
+                  最后保存于 {{ new Date(lastSaveTime).toLocaleTimeString() }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 编辑器容器 -->
       <div class="flex-1 overflow-auto">
-        <MarkdownEditor
-          v-model:content="currentNote.content"
-          placeholder="开始编写你的笔记..."
-          @save="handleContentChange"
-        />
+        <div :class="{ 'max-w-3xl mx-auto px-8': !isWideLayout, 'px-4': isWideLayout }">
+          <MarkdownEditor
+            v-model:content="currentNote.content"
+            placeholder="开始编写你的笔记..."
+            @save="handleContentChange"
+          />
+        </div>
       </div>
     </div>
 
@@ -64,23 +88,34 @@ import type { Note } from "../types";
 const currentNote = ref<Note | null>(null);
 const folderTreeRef = ref<InstanceType<typeof FolderTree> | null>(null);
 
+// 编辑器布局状态
+const isWideLayout = ref(false);
+
+// 保存状态
+const isSaving = ref(false);
+const lastSaveTime = ref<Date | null>(null);
+
 // 防抖保存
 let saveTimeout: number | null = null;
 
 // 自动保存防抖
-const handleContentChange = () => {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
+const handleContentChange = (content: string) => {
+  if (currentNote.value) {
+    currentNote.value.content = content;
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+    saveTimeout = window.setTimeout(async () => {
+      await handleSaveNote();
+    }, 1000);
   }
-  saveTimeout = window.setTimeout(() => {
-    handleSaveNote();
-  }, 1000);
 };
 
 // 保存笔记
 const handleSaveNote = async () => {
   if (!currentNote.value) return;
   try {
+    isSaving.value = true;
     const response = await fetch(`/api/v1/notes/${currentNote.value.id}`, {
       method: "PUT",
       headers: {
@@ -94,15 +129,35 @@ const handleSaveNote = async () => {
     if (!response.ok) {
       throw new Error("保存失败");
     }
+    lastSaveTime.value = new Date();
   } catch (error) {
     console.error("保存失败:", error);
     alert("保存失败");
+  } finally {
+    isSaving.value = false;
   }
 };
 
 // 处理笔记选择
-const handleSelectNote = (note: Note | null) => {
-  currentNote.value = note;
+const handleSelectNote = async (note: Note | null) => {
+  if (!note) {
+    currentNote.value = null;
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/v1/notes/${note.id}`);
+    if (!response.ok) {
+      throw new Error("获取笔记内容失败");
+    }
+    const fullNote = await response.json();
+    currentNote.value = fullNote;
+    lastSaveTime.value = null; // 重置保存状态
+  } catch (error) {
+    console.error("获取笔记内容失败:", error);
+    alert("获取笔记内容失败");
+    currentNote.value = null;
+  }
 };
 
 // 处理新建笔记

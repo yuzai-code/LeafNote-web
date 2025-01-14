@@ -1,8 +1,5 @@
 <template>
   <div class="markdown-editor">
-    <!-- 工具栏 -->
-    <Toolbar :editor="editor" />
-
     <!-- 编辑区域 -->
     <EditorContent :editor="editor" class="editor-content" />
 
@@ -19,7 +16,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Blockquote from "@tiptap/extension-blockquote";
-import { onBeforeUnmount } from "vue";
+import { onBeforeUnmount, watch } from "vue";
 import type { Editor as EditorType } from "@tiptap/core";
 import Toolbar from "./components/Toolbar.vue";
 import MenuBubble from "./components/MenuBubble.vue";
@@ -102,9 +99,22 @@ const editor = useEditor({
     ExitListOnEnter,
   ],
   onUpdate: ({ editor }) => {
-    emit("update:content", editor.getHTML());
+    const content = editor.getHTML();
+    emit("update:content", content);
+    emit("save", content);
   },
 });
+
+// 监听内容变化
+watch(
+  () => props.content,
+  (newContent) => {
+    if (editor.value && newContent !== editor.value.getHTML()) {
+      editor.value.commands.setContent(newContent || "", false);
+    }
+  },
+  { immediate: true }
+);
 
 // 组件销毁时清理编辑器
 onBeforeUnmount(() => {
@@ -114,8 +124,6 @@ onBeforeUnmount(() => {
 
 <style lang="scss">
 .markdown-editor {
-  @apply border rounded-lg overflow-hidden;
-
   .editor-content {
     @apply p-4 min-h-[300px] prose max-w-none;
 
@@ -127,12 +135,12 @@ onBeforeUnmount(() => {
       }
 
       p {
-        @apply my-0 leading-normal;
+        @apply my-0 leading-normal max-w-none;
       }
 
       ul,
       ol {
-        @apply pl-4 my-0;
+        @apply pl-4 my-0 max-w-none;
 
         li {
           @apply mt-0 mb-0;
@@ -141,7 +149,7 @@ onBeforeUnmount(() => {
 
       // 任务列表样式
       ul[data-type="taskList"] {
-        @apply list-none pl-0;
+        @apply list-none pl-0 max-w-none;
 
         li {
           @apply flex gap-2 mt-0;
@@ -162,7 +170,7 @@ onBeforeUnmount(() => {
       h4,
       h5,
       h6 {
-        @apply leading-tight mt-4 mb-2;
+        @apply leading-tight mt-4 mb-2 max-w-none;
       }
 
       code {
@@ -170,7 +178,7 @@ onBeforeUnmount(() => {
       }
 
       pre {
-        @apply bg-gray-900 text-white p-4 rounded-lg my-2;
+        @apply bg-gray-900 text-white p-4 rounded-lg my-2 max-w-none;
 
         code {
           @apply bg-transparent text-inherit p-0;
@@ -178,7 +186,7 @@ onBeforeUnmount(() => {
       }
 
       blockquote {
-        @apply pl-4 border-l-4 border-gray-200 my-2 not-italic;
+        @apply pl-4 border-l-4 border-gray-200 my-2 not-italic max-w-none;
         &::before,
         &::after {
           content: none !important;
@@ -188,6 +196,18 @@ onBeforeUnmount(() => {
 
       hr {
         @apply border-t-2 border-gray-200 my-4;
+      }
+
+      img {
+        @apply max-w-full h-auto rounded-lg;
+      }
+
+      table {
+        @apply w-full border-collapse my-4 max-w-none;
+        td,
+        th {
+          @apply border p-2;
+        }
       }
     }
   }

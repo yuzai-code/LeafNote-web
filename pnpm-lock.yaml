@@ -73,7 +73,7 @@ importers:
         specifier: ^8.4.35
         version: 8.4.49
       sass:
-        specifier: ^1.70.0
+        specifier: ^1.83.1
         version: 1.83.1
       tailwindcss:
         specifier: ^3.4.1

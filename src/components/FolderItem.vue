@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
+import { ref, nextTick, onMounted, onUnmounted } from "vue";
 import type { Category } from "../types";
 
 const props = defineProps<{
