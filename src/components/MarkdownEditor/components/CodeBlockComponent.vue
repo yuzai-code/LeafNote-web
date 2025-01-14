@@ -1,7 +1,6 @@
 <template>
   <node-view-wrapper class="code-block">
     <select
-      class="absolute right-2 top-2 z-20 bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm"
       contenteditable="false"
       v-if="editor.isEditable"
       v-model="selectedLanguage"
@@ -20,41 +19,40 @@
       <option value="csharp">C#</option>
     </select>
     <pre
-      class="bg-gray-900 text-white p-4 rounded-lg"
-      :class="{ 'ring-2 ring-blue-500': selected }"
+      :class="{ 'has-focus': selected }"
       :spellcheck="false"
-    ><node-view-content as="code" class="bg-transparent text-inherit p-0 block font-mono whitespace-pre-wrap" /></pre>
+    ><node-view-content as="code" /></pre>
   </node-view-wrapper>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { NodeViewWrapper, NodeViewContent } from "@tiptap/vue-3";
-import type { Editor } from "@tiptap/core";
-import type { NodeViewProps } from "@tiptap/vue-3";
+import { computed } from 'vue'
+import { NodeViewWrapper, NodeViewContent } from '@tiptap/vue-3'
+import type { Editor } from '@tiptap/core'
+import type { NodeViewProps } from '@tiptap/vue-3'
 
-const props = defineProps<NodeViewProps>();
+const props = defineProps<NodeViewProps>()
 
-const editor = computed(() => props.editor as Editor);
-const selected = computed(() => props.selected);
+const editor = computed(() => props.editor as Editor)
+const selected = computed(() => props.selected)
 
 const selectedLanguage = computed({
-  get: () => props.node.attrs.language || "",
+  get: () => props.node.attrs.language || '',
   set: (language: string) => {
     props.updateAttributes({
       language: language || null,
-    });
+    })
   },
-});
+})
 
 const updateLanguage = () => {
   props.updateAttributes({
     language: selectedLanguage.value || null,
-  });
-};
+  })
+}
 </script>
 
-<style lang="postcss">
+<style lang="scss" scoped>
 .code-block {
   position: relative;
   margin: 0.5rem 0;
@@ -68,16 +66,21 @@ const updateLanguage = () => {
   }
 
   pre {
-    @apply bg-gray-900 text-white p-4 rounded-lg;
+    background-color: #1a202c;
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
     &.has-focus {
-      @apply ring-2 ring-blue-500;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
     }
   }
 
   code {
-    @apply bg-transparent text-inherit p-0;
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
     display: block;
-    font-family: "Fira Code", monospace;
+    font-family: 'Fira Code', monospace;
     white-space: pre-wrap;
   }
 }

@@ -1,10 +1,10 @@
 <template>
-  <div class="border rounded-lg overflow-hidden">
+  <div class="markdown-editor">
     <!-- 工具栏 -->
     <Toolbar :editor="editor" />
 
     <!-- 编辑区域 -->
-    <EditorContent :editor="editor" class="p-4 min-h-[300px] prose max-w-none" />
+    <EditorContent :editor="editor" class="editor-content" />
 
     <!-- 悬浮菜单 -->
     <MenuBubble :editor="editor" v-if="editor" />
@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="postcss">
+<style lang="scss">
 .markdown-editor {
   @apply border rounded-lg overflow-hidden;
 
