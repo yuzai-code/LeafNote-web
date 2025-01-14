@@ -61,15 +61,29 @@
     </div -->
 
     <!-- 主要内容区域 -->
-    <div class="flex-1 bg-base-100 p-4 overflow-auto">
+    <div class="flex-1 bg-base-100 overflow-auto">
       <router-view v-slot="{ Component }">
-        <component :is="Component" />
+        <component
+          :is="Component"
+          :current-note="currentNote"
+          @create-note="handleCreateNote"
+        />
       </router-view>
     </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import type { Note } from "../types";
+import { ref } from "vue";
+
+const currentNote = ref<Note | null>(null);
+
+// 处理创建笔记
+const handleCreateNote = () => {
+  // TODO: 实现创建笔记的逻辑
+};
+</script>
 
 <style scoped>
 .h-screen {
