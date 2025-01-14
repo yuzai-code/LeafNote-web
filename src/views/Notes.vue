@@ -18,22 +18,13 @@
         />
       </div>
 
-      <!-- 工具栏 -->
-      <div class="border-b p-2 flex gap-2">
-        <button
-          v-for="item in toolbarItems"
-          :key="item.name"
-          class="btn btn-sm"
-          :class="{ 'btn-active': item.isActive?.() }"
-          @click="item.action"
-        >
-          {{ item.label }}
-        </button>
-      </div>
-
       <!-- 编辑器容器 -->
       <div class="flex-1 overflow-auto">
-        <editor-content :editor="editor" class="prose max-w-none p-4" />
+        <MarkdownEditor
+          v-model:content="currentNote.content"
+          placeholder="开始编写你的笔记..."
+          @save="handleContentChange"
+        />
       </div>
     </div>
 
@@ -64,11 +55,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, watch, computed } from "vue";
-import { useEditor, EditorContent } from "@tiptap/vue-3";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
+import { ref } from "vue";
 import FolderTree from "../components/FolderTree.vue";
+import MarkdownEditor from "../components/MarkdownEditor/index.vue";
 import type { Note } from "../types";
 
 // 当前编辑的笔记
@@ -77,91 +66,6 @@ const folderTreeRef = ref<InstanceType<typeof FolderTree> | null>(null);
 
 // 防抖保存
 let saveTimeout: number | null = null;
-
-// 初始化编辑器
-const editor = useEditor({
-  extensions: [
-    StarterKit.configure({
-      heading: {
-        levels: [1, 2, 3, 4, 5, 6],
-      },
-    }),
-    Placeholder.configure({
-      placeholder:
-        "开始编写你的笔记...\n\n提示：\n# 一级标题\n## 二级标题\n- 无序列表\n1. 有序列表\n> 引用文本\n```js\n代码块\n```",
-    }),
-  ],
-  editorProps: {
-    attributes: {
-      class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none",
-    },
-  },
-  onUpdate: ({ editor }) => {
-    if (currentNote.value) {
-      currentNote.value.content = editor.getHTML();
-      handleContentChange();
-    }
-  },
-});
-
-// 工具栏配置
-const toolbarItems = computed(() => [
-  {
-    name: "h1",
-    label: "H1",
-    action: () => editor.value?.chain().focus().toggleHeading({ level: 1 }).run(),
-    isActive: () => editor.value?.isActive("heading", { level: 1 }),
-  },
-  {
-    name: "h2",
-    label: "H2",
-    action: () => editor.value?.chain().focus().toggleHeading({ level: 2 }).run(),
-    isActive: () => editor.value?.isActive("heading", { level: 2 }),
-  },
-  {
-    name: "bold",
-    label: "粗体",
-    action: () => editor.value?.chain().focus().toggleBold().run(),
-    isActive: () => editor.value?.isActive("bold"),
-  },
-  {
-    name: "italic",
-    label: "斜体",
-    action: () => editor.value?.chain().focus().toggleItalic().run(),
-    isActive: () => editor.value?.isActive("italic"),
-  },
-  {
-    name: "bulletList",
-    label: "无序列表",
-    action: () => editor.value?.chain().focus().toggleBulletList().run(),
-    isActive: () => editor.value?.isActive("bulletList"),
-  },
-  {
-    name: "orderedList",
-    label: "有序列表",
-    action: () => editor.value?.chain().focus().toggleOrderedList().run(),
-    isActive: () => editor.value?.isActive("orderedList"),
-  },
-  {
-    name: "blockquote",
-    label: "引用",
-    action: () => editor.value?.chain().focus().toggleBlockquote().run(),
-    isActive: () => editor.value?.isActive("blockquote"),
-  },
-  {
-    name: "code",
-    label: "代码块",
-    action: () => editor.value?.chain().focus().toggleCodeBlock().run(),
-    isActive: () => editor.value?.isActive("codeBlock"),
-  },
-]);
-
-// 监听笔记变化，更新编辑器内容
-watch(currentNote, (newNote) => {
-  if (newNote && editor.value) {
-    editor.value.commands.setContent(newNote.content || "");
-  }
-});
 
 // 自动保存防抖
 const handleContentChange = () => {
@@ -241,62 +145,4 @@ const handleCreateNote = async () => {
     alert("创建笔记失败");
   }
 };
-
-// 组件销毁时清理编辑器
-onBeforeUnmount(() => {
-  editor.value?.destroy();
-});
 </script>
-
-<style lang="scss">
-.ProseMirror {
-  > * + * {
-    margin-top: 0.75em;
-  }
-
-  ul,
-  ol {
-    padding: 0 1rem;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    line-height: 1.1;
-  }
-
-  code {
-    background-color: rgba(#616161, 0.1);
-    color: #616161;
-  }
-
-  pre {
-    background: #0d0d0d;
-    color: #fff;
-    font-family: "JetBrainsMono", monospace;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-
-    code {
-      color: inherit;
-      padding: 0;
-      background: none;
-      font-size: 0.8rem;
-    }
-  }
-
-  blockquote {
-    padding-left: 1rem;
-    border-left: 2px solid rgba(#0d0d0d, 0.1);
-  }
-
-  hr {
-    border: none;
-    border-top: 2px solid rgba(#0d0d0d, 0.1);
-    margin: 2rem 0;
-  }
-}
-</style>
