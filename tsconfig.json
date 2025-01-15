@@ -18,22 +18,8 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
-    /* Paths */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "src/types/auto-imports.d.ts",
-    "src/types/components.d.ts",
-    "src/types/md-editor-v3.d.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
