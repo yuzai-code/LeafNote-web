@@ -1,7 +1,16 @@
 <template>
-  <div class="flex h-screen">
-    <!-- 左侧侧边栏 -->
-    <div class="w-16 bg-base-200 flex flex-col items-center py-4 gap-2">
+  <div class="min-h-screen bg-base-100">
+    <header class="navbar bg-base-200">
+      <div class="flex-1">
+        <a class="btn btn-ghost text-xl">LeafNote</a>
+      </div>
+      <div class="flex-none">
+        <!-- Add header content here -->
+      </div>
+    </header>
+
+    <div class="flex flex-1">
+    <div class="w-16 bg-base-200 flex flex-col items-center py-4 gap-2 min-h-[calc(100vh-4rem)]">
       <router-link to="/" class="btn btn-ghost btn-square">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -51,35 +60,19 @@
         </svg>
       </router-link>
     </div>
-
-    <!-- 主要内容区域 -->
-    <div class="flex-1 bg-base-100 overflow-auto">
-      <router-view v-slot="{ Component }">
-        <component
-          :is="Component"
-          :current-note="currentNote"
-          @create-note="handleCreateNote"
-        />
-      </router-view>
+    <main class="container mx-auto">
+        
+      <router-view></router-view>
+    </main>
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Note } from "../types";
-import { ref } from "vue";
-
-const currentNote = ref<Note | null>(null);
-
-// 处理创建笔记
-const handleCreateNote = () => {
-  // TODO: 实现创建笔记的逻辑
-};
+// Add component logic here
 </script>
 
 <style scoped>
-.h-screen {
-  height: 100vh;
-  min-height: 100vh;
-}
-</style>
+/* Add component styles here */
+</style> 
