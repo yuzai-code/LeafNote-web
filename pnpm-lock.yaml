@@ -12,8 +12,11 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2(vue@3.5.13(typescript@5.6.3))
       '@tauri-apps/api':
-        specifier: ^2.0.1
-        version: 2.0.1
+        specifier: ^2.2.0
+        version: 2.2.0
+      '@tauri-apps/cli':
+        specifier: ^2.0.0-beta.5
+        version: 2.2.4
       '@tauri-apps/plugin-opener':
         specifier: ^2
         version: 2.2.4
@@ -69,9 +72,6 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17)
-      '@tauri-apps/cli':
-        specifier: ^2
-        version: 2.2.4
       '@types/node':
         specifier: ^20.11.16
         version: 20.17.14
@@ -544,8 +544,8 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
-  '@tauri-apps/api@2.0.1':
-    resolution: {integrity: sha512-eoQWT+Tq1qSwQpHV+nw1eNYe5B/nm1PoRjQCRiEOS12I1b+X4PUcREfXVX8dPcBT6GrzWGDtaecY0+1p0Rfqlw==}
+  '@tauri-apps/api@2.2.0':
+    resolution: {integrity: sha512-R8epOeZl1eJEl603aUMIGb4RXlhPjpgxbGVEaqY+0G5JG9vzV/clNlzTeqc+NLYXVqXcn8mb4c5b9pJIUDEyAg==}
 
   '@tauri-apps/cli-darwin-arm64@2.2.4':
     resolution: {integrity: sha512-+sMLkQBFebn/UENyaXpyQqRkdFQie8RdEvYVz0AGthm2p0lMVlWiBmc4ImBJmfo8569zVeDX8B+5OWt4/AuZzA==}
@@ -1948,7 +1948,7 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 3.4.17
 
-  '@tauri-apps/api@2.0.1': {}
+  '@tauri-apps/api@2.2.0': {}
 
   '@tauri-apps/cli-darwin-arm64@2.2.4':
     optional: true
@@ -1995,7 +1995,7 @@ snapshots:
 
   '@tauri-apps/plugin-opener@2.2.4':
     dependencies:
-      '@tauri-apps/api': 2.0.1
+      '@tauri-apps/api': 2.2.0
 
   '@tiptap/core@2.11.2(@tiptap/pm@2.11.2)':
     dependencies:

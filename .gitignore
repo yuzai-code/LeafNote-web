@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Rust build files
+src-tauri/target/
+*.rlib
+*.rmeta
+*.pdb
+*.lib

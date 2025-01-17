@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
-    "@tauri-apps/api": "^2.0.1",
+    "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/cli": "^2.0.0-beta.5",
     "@tauri-apps/plugin-opener": "^2",
     "@tiptap/core": "^2.2.4",
     "@tiptap/extension-blockquote": "^2.11.2",
@@ -32,7 +33,6 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
-    "@tauri-apps/cli": "^2",
     "@types/node": "^20.11.16",
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.17",
