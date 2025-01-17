@@ -9,7 +9,7 @@
       </div>
     </header>
 
-    <div class="flex flex-1">
+    <div class="flex">
     <div class="w-16 bg-base-200 flex flex-col items-center py-4 gap-2 min-h-[calc(100vh-4rem)]">
       <router-link to="/" class="btn btn-ghost btn-square">
         <svg
@@ -60,7 +60,7 @@
         </svg>
       </router-link>
     </div>
-    <main class="container mx-auto">
+    <main class="w-full">
         
       <router-view></router-view>
     </main>

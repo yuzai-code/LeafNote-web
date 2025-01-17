@@ -1,11 +1,11 @@
 <template>
-    <div class="flex h-full">
+    <div class="flex">
         <!-- 左侧目录树 -->
-        <div class="w-64 border-r p-4">
+        <div class="basis-1/5 w-64 border-r p-4">
             <FolderFree />
         </div>
         <!-- 右侧笔记列表 -->
-        <div class="flex-1 p-4">
+        <div class="basis-4/5 p-4 flex justify-center">
             <div class="grid gap-4">
                 <!-- 笔记卡片 -->
                 <div v-for="note in notes" :key="note.id" 
@@ -29,7 +29,7 @@
 </template>
     
 <script setup lang='ts'>
-import FolderFree from '@/compontents/FolderFree.vue'
+import FolderFree from '../compontents/FolderFree.vue'
 
 // 模拟笔记数据
 const notes = [
