@@ -1,0 +1,33 @@
+# 设置默认行为
+* text=auto eol=lf
+
+# 前端文件
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.vue text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+
+# 配置文件
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.lock text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+.env* text eol=lf
+
+# 二进制文件
+*.png -text
+*.jpg -text
+*.gif -text
+*.ico -text
+*.zip -text
+*.tar -text
+*.gz -text
