@@ -1,33 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import MainLayout from '../layouts/MainLayout.vue'
-import Home from '../views/Home.vue'
-import Notes from '../views/Notes.vue'
-import Tags from '../views/Tags.vue'
+import Editor from '@/views/Editor.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      component: MainLayout,
-      children: [
-        {
-          path: '',
-          name: 'home',
-          component: Home
-        },
-        {
-          path: 'notes',
-          name: 'notes',
-          component: Notes
-        },
-        {
-          path: 'tags',
-          name: 'tags',
-          component: Tags
-        },
-      ]
+      path: '/editor',
+      name: 'editor',
+      component: Editor
     }
+    // ... 其他路由
   ]
 })
 
