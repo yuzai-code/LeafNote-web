@@ -1,4 +1,4 @@
-import { core } from '@tauri-apps/api';
+import { invoke } from '@tauri-apps/api/core';
 // 定义接口返回类型
 export interface Note {
   id: string
@@ -35,7 +35,7 @@ export class ApiService {
   // 获取目录列表
   static async getCategories(): Promise<Category[]> {
     try {
-      const response = await core.invoke<Category[]>('get_categories')
+      const response = await invoke<Category[]>('get_categories')
       return response
     } catch (error) {
       console.error('获取目录列表失败:', error)
@@ -46,7 +46,7 @@ export class ApiService {
   // 获取笔记列表
   static async getNotes(): Promise<Note[]> {
     try {
-      const response = await core.invoke<Note[]>('get_notes')
+      const response = await invoke<Note[]>('get_notes')
       return response
     } catch (error) {
       console.error('获取笔记列表失败:', error)

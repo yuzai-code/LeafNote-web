@@ -7,17 +7,34 @@ use models::{Category, Note};
 #[tauri::command]
 async fn get_categories() -> Result<Vec<Category>, String> {
     let client = reqwest::Client::new();
+    println!("Fetching categories from backend...");
+    
     let response = client
         .get("http://localhost:8080/api/v1/categories")
         .send()
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            println!("Error sending request: {}", e);
+            e.to_string()
+        })?;
+    
+    println!("Response status: {}", response.status());
+    
+    if !response.status().is_success() {
+        let error_text = response.text().await.unwrap_or_default();
+        println!("Error response: {}", error_text);
+        return Err(format!("Backend error: {}", error_text));
+    }
     
     let categories = response
         .json::<Vec<Category>>()
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            println!("Error parsing response: {}", e);
+            e.to_string()
+        })?;
     
+    println!("Successfully fetched {} categories", categories.len());
     Ok(categories)
 }
 
