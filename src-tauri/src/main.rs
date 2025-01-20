@@ -6,11 +6,20 @@ use models::{Category, Note};
 
 #[tauri::command]
 async fn get_categories() -> Result<Vec<Category>, String> {
-    let client = reqwest::Client::new();
-    println!("Fetching categories from backend...");
+    // 创建自定义客户端配置
+    let client = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)  // 开发环境可以接受无效证书
+        .no_proxy()  // 禁用系统代理
+        .build()
+        .map_err(|e| e.to_string())?;
+    
+    
+    let url = "http://127.0.0.1:8080/api/v1/categories";  // 使用 127.0.0.1 替代 localhost
     
     let response = client
-        .get("http://localhost:8080/api/v1/categories")
+        .get(url)
+        .header("User-Agent", "Tauri/1.0")
+        .header("Accept", "application/json")
         .send()
         .await
         .map_err(|e| {
@@ -18,23 +27,24 @@ async fn get_categories() -> Result<Vec<Category>, String> {
             e.to_string()
         })?;
     
-    println!("Response status: {}", response.status());
+/*     println!("Response status: {}", response.status());
+    println!("Response headers: {:#?}", response.headers()) */;
     
-    if !response.status().is_success() {
-        let error_text = response.text().await.unwrap_or_default();
-        println!("Error response: {}", error_text);
-        return Err(format!("Backend error: {}", error_text));
-    }
+    // 获取响应体的文本内容
+    let text = response.text().await.map_err(|e| {
+        println!("Error reading response text: {}", e);
+        e.to_string()
+    })?;
     
-    let categories = response
-        .json::<Vec<Category>>()
-        .await
-        .map_err(|e| {
-            println!("Error parsing response: {}", e);
-            e.to_string()
-        })?;
+    // println!("Response body: {}", text);
     
-    println!("Successfully fetched {} categories", categories.len());
+    // 尝试解析 JSON
+    let categories: Vec<Category> = serde_json::from_str(&text).map_err(|e| {
+        println!("Error parsing JSON: {}", e);
+        e.to_string()
+    })?;
+    
+    // println!("Successfully parsed {} categories", categories.len());
     Ok(categories)
 }
 

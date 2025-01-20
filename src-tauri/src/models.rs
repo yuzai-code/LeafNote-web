@@ -22,7 +22,12 @@ pub struct Category {
     pub name: String,
     pub parent_id: Option<String>,
     pub path: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
+    pub parent: Option<Box<Category>>,
     pub children: Option<Vec<Category>>,
+    pub notes: Option<Vec<Note>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -30,5 +35,9 @@ pub struct Tag {
     pub id: String,
     pub name: String,
     pub parent_id: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
+    pub parent: Option<Box<Tag>>,
     pub children: Option<Vec<Tag>>,
 } 
