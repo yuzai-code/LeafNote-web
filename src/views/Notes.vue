@@ -1,11 +1,13 @@
 <template>
   <div class="flex h-full">
     <!-- 左侧目录树 -->
-    <div ref="sidebarRef" class="h-full border-r" :style="{ width: sidebarWidth + 'px' }">
-      <div class="p-4">
-        <FolderFree />
+    <aside class="bg-base-100 h-full flex flex-col" :style="{ width: sidebarWidth + 'px' }">
+      <div class="flex-1 overflow-y-auto overflow-x-hidden scrollbar-container">
+        <div class="h-full">
+          <FolderFree />
+        </div>
       </div>
-    </div>
+    </aside>
 
     <!-- 分割线 -->
     <div
@@ -19,7 +21,7 @@
     </div>
 
     <!-- 右侧笔记列表 -->
-    <div class="flex-1 p-4 flex justify-center">
+    <div class="flex-1 p-4 flex justify-center overflow-y-auto scrollbar-container">
       <MuyaEditor />
       <div class="grid gap-4">
         <!-- 笔记卡片 -->
@@ -156,4 +158,32 @@ const notes = [
 ];
 </script>
 
-<style></style>
+<style scoped>
+/* 自定义滚动条样式 */
+.scrollbar-container {
+  scrollbar-width: thin;
+}
+
+.scrollbar-container::-webkit-scrollbar {
+  width: 4px;
+  height: 0;
+  display: none;
+}
+
+.scrollbar-container:hover::-webkit-scrollbar {
+  display: block;
+}
+
+.scrollbar-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+</style>

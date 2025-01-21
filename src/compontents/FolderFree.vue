@@ -1,110 +1,112 @@
 <template>
-  <!-- 搜索框 -->
-  <div class="form-control mb-4">
-    <input
-      type="text"
-      placeholder="搜索文件夹..."
-      class="input input-bordered input-sm w-full"
-    />
-  </div>
+  <div class="h-full p-4 flex flex-col">
+    <!-- 搜索框 -->
+    <div class="form-control mb-4">
+      <input
+        type="text"
+        placeholder="搜索文件夹..."
+        class="input input-bordered input-sm w-full"
+      />
+    </div>
 
-  <!-- 加载状态 -->
-  <div v-if="loading" class="flex justify-center items-center py-4">
-    <div class="loading loading-spinner loading-md"></div>
-  </div>
+    <!-- 加载状态 -->
+    <div v-if="loading" class="flex justify-center items-center py-4">
+      <div class="loading loading-spinner loading-md"></div>
+    </div>
 
-  <!-- 错误提示 -->
-  <div v-else-if="error" class="alert alert-error">
-    <span>{{ error }}</span>
-  </div>
+    <!-- 错误提示 -->
+    <div v-else-if="error" class="alert alert-error">
+      <span>{{ error }}</span>
+    </div>
 
-  <!-- 目录树 -->
-  <div v-else>
-    <template v-for="folder in folders" :key="folder.id">
-      <!-- 文件夹项 -->
-      <div class="cursor-pointer">
-        <div
-          class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
-          :class="{ 'pl-[calc(12px*var(--depth,1))]': folder.path.split('/').length - 1 }"
-          :style="{ '--depth': folder.path.split('/').length - 1 }"
-          @click="toggleFolder(folder)"
-        >
-          <!-- 展开/折叠图标 -->
-          <svg
-            class="w-4 h-4 transition-transform"
-            :class="{ 'rotate-90': folder.expanded }"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
+    <!-- 目录树 -->
+    <div v-else class="flex-1">
+      <template v-for="folder in folders" :key="folder.id">
+        <!-- 文件夹项 -->
+        <div class="cursor-pointer">
+          <div
+            class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
+            :class="{ 'pl-[calc(12px*var(--depth,1))]': folder.path.split('/').length - 1 }"
+            :style="{ '--depth': folder.path.split('/').length - 1 }"
+            @click="toggleFolder(folder)"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-          <!-- 文件夹图标 -->
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-            />
-          </svg>
-          <span class="text-sm flex-1">{{ folder.name }}</span>
-          <FolderItem />
-        </div>
-        <!-- 子文件夹 -->
-        <div v-if="folder.expanded && folder.children?.length" class="mt-1">
-          <template v-for="child in folder.children" :key="child.id">
-            <div class="cursor-pointer">
-              <div
-                class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
-                :class="{
-                  'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length - 1,
-                }"
-                :style="{ '--depth': child.path.split('/').length - 1 }"
-                @click.stop="toggleFolder(child)"
-              >
-                <!-- 展开/折叠图标 -->
-                <svg
-                  class="w-4 h-4 transition-transform"
-                  :class="{ 'rotate-90': child.expanded }"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
+            <!-- 展开/折叠图标 -->
+            <svg
+              class="w-4 h-4 transition-transform"
+              :class="{ 'rotate-90': folder.expanded }"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+            <!-- 文件夹图标 -->
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+              />
+            </svg>
+            <span class="text-sm flex-1">{{ folder.name }}</span>
+            <FolderItem />
+          </div>
+          <!-- 子文件夹 -->
+          <div v-if="folder.expanded && folder.children?.length" class="mt-1">
+            <template v-for="child in folder.children" :key="child.id">
+              <div class="cursor-pointer">
+                <div
+                  class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
+                  :class="{
+                    'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length - 1,
+                  }"
+                  :style="{ '--depth': child.path.split('/').length - 1 }"
+                  @click.stop="toggleFolder(child)"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-                <!-- 文件夹图标 -->
-                <svg
-                  class="w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                  />
-                </svg>
-                <span class="text-sm flex-1">{{ child.name }}</span>
-                <FolderItem />
+                  <!-- 展开/折叠图标 -->
+                  <svg
+                    class="w-4 h-4 transition-transform"
+                    :class="{ 'rotate-90': child.expanded }"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                  <!-- 文件夹图标 -->
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                    />
+                  </svg>
+                  <span class="text-sm flex-1">{{ child.name }}</span>
+                  <FolderItem />
+                </div>
               </div>
-            </div>
-          </template>
+            </template>
+          </div>
         </div>
-      </div>
-    </template>
+      </template>
+    </div>
   </div>
 </template>
 
