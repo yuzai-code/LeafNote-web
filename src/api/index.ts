@@ -33,6 +33,7 @@ export interface Category {
   parent?: Category | null
   children?: Category[]
   notes?: Note[]
+  expanded?: boolean;
 }
 
 export interface Tag {
@@ -48,12 +49,13 @@ export interface Tag {
 
 // Web 端 API 实现
 class WebApi {
-  static async fetchApi<T>(endpoint: string): Promise<T> {
+  static async fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
+      ...options
     });
 
     if (!response.ok) {
@@ -62,14 +64,21 @@ class WebApi {
 
     return response.json();
   }
-
+  // 获取目录列表
   static async getCategories(): Promise<Category[]> {
     return this.fetchApi<Category[]>('/categories');
   }
+  
+  // 新建目录
+  static async createCategory(category: Category): Promise<Category> {
+    return this.fetchApi<Category>('/categories', { method: 'POST', body: JSON.stringify(category) });
+  }
 
+  // 获取笔记列表
   static async getNotes(): Promise<Note[]> {
     return this.fetchApi<Note[]>('/notes');
   }
+
 }
 
 // Tauri 端 API 实现

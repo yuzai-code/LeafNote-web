@@ -23,7 +23,7 @@
       <MuyaEditor />
       <div class="grid gap-4">
         <!-- 笔记卡片 -->
-        <div
+        <!-- <div
           v-for="note in notes"
           :key="note.id"
           class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer"
@@ -41,14 +41,14 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onUnmounted } from "vue";
 import FolderFree from "../compontents/FolderFree.vue";
 import MuyaEditor from "../compontents/MuyaEditor.vue";
 
