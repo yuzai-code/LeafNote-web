@@ -14,7 +14,7 @@
       <button
         class="btn btn-sm btn-outline tooltip tooltip-bottom"
         data-tip="新建笔记"
-        @click="handleCreateNote"
+        @click="() => handleCreateNote(null)"
       >
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path
@@ -89,44 +89,46 @@
               'pl-[calc(12px*var(--depth,1))]': folder.path.split('/').length - 1,
             }"
             :style="{ '--depth': folder.path.split('/').length - 1 }"
-            @click="toggleFolder(folder)"
           >
             <!-- 展开/折叠图标 -->
-            <svg
-              class="w-4 h-4 transition-transform"
-              :class="{ 'rotate-90': folder.expanded }"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-            <!-- 文件夹图标 -->
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-              />
-            </svg>
-            <!-- 目录名称/重命名输入框 -->
-            <div class="flex-1" @click.stop>
-              <input
-                v-if="folder.isEditing"
-                :ref="el => setInputRef(el, folder.id)"
-                v-model="folder.editingName"
-                class="input input-sm input-bordered w-full"
-                @blur="handleRename(folder)"
-                @keyup.enter="handleRename(folder)"
-                @keyup.esc="cancelRename(folder)"
-              />
-              <span v-else class="text-sm">{{ folder.name }}</span>
+            <div class="flex items-center gap-2 flex-1 cursor-pointer" @click="toggleFolder(folder)">
+              <svg
+                class="w-4 h-4 transition-transform"
+                :class="{ 'rotate-90': folder.expanded }"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+              <!-- 文件夹图标 -->
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                />
+              </svg>
+              <!-- 目录名称/重命名输入框 -->
+              <div class="flex-1">
+                <input
+                  v-if="folder.isEditing"
+                  :ref="el => setInputRef(el, folder.id)"
+                  v-model="folder.editingName"
+                  class="input input-sm input-bordered w-full"
+                  @blur="handleRename(folder)"
+                  @keyup.enter="handleRename(folder)"
+                  @keyup.esc="cancelRename(folder)"
+                  @click.stop
+                />
+                <span v-else class="text-sm">{{ folder.name }}</span>
+              </div>
             </div>
             <FolderItem 
               @create-note="handleCreateNote(folder)"
@@ -145,49 +147,51 @@
                     'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length - 1,
                   }"
                   :style="{ '--depth': child.path.split('/').length - 1 }"
-                  @click.stop="toggleFolder(child)"
                 >
                   <!-- 展开/折叠图标 -->
-                  <svg
-                    class="w-4 h-4 transition-transform"
-                    :class="{ 'rotate-90': child.expanded }"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  <!-- 文件夹图标 -->
-                  <svg
-                    class="w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                    />
-                  </svg>
-                  <!-- 目录名称/重命名输入框 -->
-                  <div class="flex-1" @click.stop>
-                    <input
-                      v-if="child.isEditing"
-                      :ref="el => setInputRef(el, child.id)"
-                      v-model="child.editingName"
-                      class="input input-sm input-bordered w-full"
-                      @blur="handleRename(child)"
-                      @keyup.enter="handleRename(child)"
-                      @keyup.esc="cancelRename(child)"
-                    />
-                    <span v-else class="text-sm">{{ child.name }}</span>
+                  <div class="flex items-center gap-2 flex-1 cursor-pointer" @click="toggleFolder(child)">
+                    <svg
+                      class="w-4 h-4 transition-transform"
+                      :class="{ 'rotate-90': child.expanded }"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                    <!-- 文件夹图标 -->
+                    <svg
+                      class="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                      />
+                    </svg>
+                    <!-- 目录名称/重命名输入框 -->
+                    <div class="flex-1">
+                      <input
+                        v-if="child.isEditing"
+                        :ref="el => setInputRef(el, child.id)"
+                        v-model="child.editingName"
+                        class="input input-sm input-bordered w-full"
+                        @blur="handleRename(child)"
+                        @keyup.enter="handleRename(child)"
+                        @keyup.esc="cancelRename(child)"
+                        @click.stop
+                      />
+                      <span v-else class="text-sm">{{ child.name }}</span>
+                    </div>
                   </div>
                   <FolderItem 
                     @create-note="handleCreateNote(child)"
@@ -229,12 +233,12 @@ const setInputRef = (el: ComponentPublicInstance | Element | null, id: string) =
 };
 
 // 处理新建笔记
-const handleCreateNote = async (folder: Category) => {
+const handleCreateNote = async (folder: Category | null) => {
   try {
     const newNote: Partial<Note> = {
       title: "新建笔记",
       content: "",
-      category_id: folder.id,
+      category_id: folder?.id || "",
       yaml_meta: "",
     };
 
