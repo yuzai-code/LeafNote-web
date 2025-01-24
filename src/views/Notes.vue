@@ -1,7 +1,10 @@
 <template>
   <div class="flex h-full">
     <!-- 左侧目录树 -->
-    <aside class="bg-base-100 h-full flex flex-col" :style="{ width: sidebarWidth + 'px' }">
+    <aside
+      class="bg-base-100 h-full flex flex-col"
+      :style="{ width: sidebarWidth + 'px' }"
+    >
       <div class="flex-1 overflow-y-auto overflow-x-hidden scrollbar-container">
         <div class="h-full">
           <FolderFree />
