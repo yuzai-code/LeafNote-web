@@ -71,7 +71,33 @@ class WebApi {
   }
   // 获取目录列表
   static async getCategories(): Promise<Category[]> {
-    return this.fetchApi<Category[]>('/categories');
+    // 1. 获取所有目录
+    const categories = await this.fetchApi<Category[]>('/categories');
+    
+    // 2. 获取所有笔记
+    const notes = await this.getNotes();
+    
+    // 3. 将笔记分配到对应的目录中
+    const categoriesMap = new Map<string, Category>();
+    categories.forEach(category => {
+      category.notes = [];
+      categoriesMap.set(category.id, category);
+    });
+    
+    // 4. 将笔记添加到对应的目录中
+    notes.forEach(note => {
+      if (note.category_id) {
+        const category = categoriesMap.get(note.category_id);
+        if (category) {
+          if (!category.notes) {
+            category.notes = [];
+          }
+          category.notes.push(note);
+        }
+      }
+    });
+    
+    return categories;
   }
   
   // 新建目录

@@ -141,72 +141,127 @@
             </div>
           </div>
           <!-- 子文件夹 -->
-          <div v-if="folder.expanded && folder.children?.length" class="mt-1">
-            <template v-for="child in folder.children" :key="child.id">
-              <div class="cursor-pointer">
+          <div v-if="folder.expanded" class="mt-1">
+            <!-- 显示笔记 -->
+            <template v-if="folder.notes?.length">
+              <div v-for="note in folder.notes" :key="note.id" class="cursor-pointer">
                 <div
-                  class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg cursor-pointer"
+                  class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
                   :class="{
-                    'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length - 1,
+                    'pl-[calc(12px*var(--depth,1))]': folder.path.split('/').length,
                   }"
-                  :style="{ '--depth': child.path.split('/').length - 1 }"
-                  @click="toggleFolder(child)"
+                  :style="{ '--depth': folder.path.split('/').length }"
                 >
-                  <!-- 展开/折叠图标 -->
+                  <!-- 笔记图标 -->
                   <div class="flex items-center gap-2 flex-1">
-                    <svg
-                      class="w-4 h-4 transition-transform"
-                      :class="{ 'rotate-90': child.expanded }"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
+                    <div class="w-4"></div>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M9 5l7 7-7 7"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                    <!-- 文件夹图标 -->
-                    <svg
-                      class="w-4 h-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                      />
-                    </svg>
-                    <!-- 目录名称/重命名输入框 -->
-                    <div class="flex-1">
-                      <input
-                        v-if="child.isEditing"
-                        :ref="el => setInputRef(el, child.id)"
-                        v-model="child.editingName"
-                        class="input input-sm input-bordered w-full"
-                        @blur="handleRename(child)"
-                        @keyup.enter="handleRename(child)"
-                        @keyup.esc="cancelRename(child)"
-                        @click.stop
-                      />
-                      <span v-else class="text-sm">{{ child.name }}</span>
-                    </div>
-                  </div>
-                  <div @click.stop>
-                    <FolderItem 
-                      @create-note="handleCreateNote(child)"
-                      @create-folder="handleCreateSubFolder(child)"
-                      @rename="startRename(child)"
-                      @delete="handleDeleteFolder(child)"
-                    />
+                    <span class="text-sm flex-1">{{ note.title }}</span>
                   </div>
                 </div>
               </div>
+            </template>
+            <!-- 子目录 -->
+            <template v-if="folder.children?.length">
+              <template v-for="child in folder.children" :key="child.id">
+                <div class="cursor-pointer">
+                  <div
+                    class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg cursor-pointer"
+                    :class="{
+                      'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length - 1,
+                    }"
+                    :style="{ '--depth': child.path.split('/').length - 1 }"
+                    @click="toggleFolder(child)"
+                  >
+                    <!-- 展开/折叠图标 -->
+                    <div class="flex items-center gap-2 flex-1">
+                      <svg
+                        class="w-4 h-4 transition-transform"
+                        :class="{ 'rotate-90': child.expanded }"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                      <!-- 文件夹图标 -->
+                      <svg
+                        class="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                        />
+                      </svg>
+                      <!-- 目录名称/重命名输入框 -->
+                      <div class="flex-1">
+                        <input
+                          v-if="child.isEditing"
+                          :ref="el => setInputRef(el, child.id)"
+                          v-model="child.editingName"
+                          class="input input-sm input-bordered w-full"
+                          @blur="handleRename(child)"
+                          @keyup.enter="handleRename(child)"
+                          @keyup.esc="cancelRename(child)"
+                          @click.stop
+                        />
+                        <span v-else class="text-sm">{{ child.name }}</span>
+                      </div>
+                    </div>
+                    <div @click.stop>
+                      <FolderItem 
+                        @create-note="handleCreateNote(child)"
+                        @create-folder="handleCreateSubFolder(child)"
+                        @rename="startRename(child)"
+                        @delete="handleDeleteFolder(child)"
+                      />
+                    </div>
+                  </div>
+                  <!-- 子目录的笔记 -->
+                  <div v-if="child.expanded && child.notes?.length" class="mt-1">
+                    <div v-for="note in child.notes" :key="note.id" class="cursor-pointer">
+                      <div
+                        class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
+                        :class="{
+                          'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length,
+                        }"
+                        :style="{ '--depth': child.path.split('/').length }"
+                      >
+                        <!-- 笔记图标 -->
+                        <div class="flex items-center gap-2 flex-1">
+                          <div class="w-4"></div>
+                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                          <span class="text-sm flex-1">{{ note.title }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
             </template>
           </div>
         </div>
@@ -238,19 +293,83 @@ const setInputRef = (el: ComponentPublicInstance | Element | null, id: string) =
   }
 };
 
+// 生成唯一的笔记标题
+const generateUniqueNoteTitle = (baseName: string, folder: Category | null): string => {
+  let counter = 1;
+  let existingNames = new Set<string>();
+
+  // 获取已存在的笔记标题
+  if (folder && folder.notes) {
+    existingNames = new Set(folder.notes.map(note => note.title));
+  } else if (!folder) {
+    // 如果是根目录，获取所有根目录下的笔记标题
+    folders.value.forEach(f => {
+      if (f.notes) {
+        f.notes.forEach(note => existingNames.add(note.title));
+      }
+    });
+  }
+
+  let newName = baseName;
+  while (existingNames.has(newName)) {
+    newName = `${baseName}${counter}`;
+    counter++;
+  }
+
+  return newName;
+};
+
+// 生成唯一的文件路径
+const generateUniqueFilePath = (title: string, folder: Category | null): string => {
+  let counter = 1;
+  // 确保目录路径以斜杠结尾
+  let basePath = folder ? (folder.path.endsWith('/') ? folder.path : folder.path + '/') : '/';
+  
+  // 将标题转换为合法的文件名（移除特殊字符，用连字符替换空格）
+  const safeTitle = title.toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-') // 保留中文字符、字母和数字，其他替换为连字符
+    .replace(/^-+|-+$/g, ''); // 移除开头和结尾的连字符
+  
+  let filePath = `${basePath}${safeTitle}.md`;
+
+  // 如果文件路径已存在，添加数字后缀
+  if (folder && folder.notes) {
+    const existingPaths = new Set(folder.notes.map(note => note.file_path));
+    while (existingPaths.has(filePath)) {
+      filePath = `${basePath}${safeTitle}-${counter}.md`;
+      counter++;
+    }
+  }
+  
+  return filePath;
+};
+
 // 处理新建笔记
 const handleCreateNote = async (folder: Category | null) => {
   try {
+    const title = generateUniqueNoteTitle("新建笔记", folder);
+    const filePath = generateUniqueFilePath(title, folder);
     const newNote: Partial<Note> = {
-      title: "新建笔记",
+      title,
       content: "",
-      category_id: folder?.id || "",
+      category_id: folder?.id,
       yaml_meta: "",
+      file_path: filePath,
     };
 
     const createdNote = await ApiService.createNote(newNote);
     console.log("笔记创建成功:", createdNote);
-    // TODO: 可以在这里添加成功提示或跳转到编辑页面
+    
+    // 将新笔记添加到对应的目录中
+    if (folder) {
+      if (!folder.notes) {
+        folder.notes = [];
+      }
+      folder.notes.push(createdNote);
+    } else {
+      // 如果是根目录，刷新目录列表
+      await fetchCategories();
+    }
   } catch (err: unknown) {
     console.error("创建笔记失败:", err);
     if (err instanceof Error) {
