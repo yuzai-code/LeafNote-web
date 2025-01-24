@@ -7,7 +7,7 @@
     >
       <div class="flex-1 overflow-y-auto overflow-x-hidden scrollbar-container">
         <div class="h-full">
-          <FolderFree />
+          <FolderFree @select-note="handleSelectNote" />
         </div>
       </div>
     </aside>
@@ -23,30 +23,20 @@
       ></div>
     </div>
 
-    <!-- 右侧笔记列表 -->
-    <div class="flex-1 p-4 flex justify-center overflow-y-auto scrollbar-container">
-      <MuyaEditor />
-      <div class="grid gap-4">
-        <!-- 笔记卡片 -->
-        <!-- <div
-          v-for="note in notes"
-          :key="note.id"
-          class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer"
-        >
-          <div class="card-body">
-            <h2 class="card-title">{{ note.title }}</h2>
-            <p class="text-sm text-base-content/70">{{ note.excerpt }}</p>
-            <div class="flex justify-between items-center mt-2">
-              <span class="text-xs text-base-content/50">{{ note.date }}</span>
-              <div class="flex gap-2">
-                <span class="badge badge-primary">{{ note.category }}</span>
-                <span v-for="tag in note.tags" :key="tag" class="badge badge-ghost">{{
-                  tag
-                }}</span>
-              </div>
-            </div>
-          </div>
-        </div> -->
+    <!-- 右侧编辑器 -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- 笔记标题 -->
+      <div v-if="currentNote" class="p-4 border-b">
+        <h1 class="text-xl font-bold">{{ currentNote.title }}</h1>
+      </div>
+      <!-- 编辑器 -->
+      <div class="flex-1 overflow-y-auto scrollbar-container">
+        <MuyaEditor
+          ref="editorRef"
+          v-model="editorContent"
+          :autoFocus="true"
+          @change="handleEditorChange"
+        />
       </div>
     </div>
   </div>
@@ -56,6 +46,8 @@
 import { ref, onUnmounted } from "vue";
 import FolderFree from "../compontents/FolderFree.vue";
 import MuyaEditor from "../compontents/MuyaEditor.vue";
+import { Note } from "../api/types";
+import { ApiService } from "../api";
 
 const SIDEBAR_WIDTH_KEY = "leafnote-sidebar-width";
 const DEFAULT_WIDTH = 280;
@@ -112,6 +104,62 @@ const stopResize = () => {
 onUnmounted(() => {
   document.removeEventListener("mousemove", handleMouseMove);
   document.removeEventListener("mouseup", stopResize);
+});
+
+// 编辑器相关状态
+const editorRef = ref();
+const editorContent = ref("");
+const currentNote = ref<Note | null>(null);
+const saveTimeout = ref<number | null>(null);
+
+// 处理笔记选择
+const handleSelectNote = async (note: Note) => {
+  try {
+    // 获取完整的笔记内容
+    const fullNote = await ApiService.getNoteById(note.id);
+    currentNote.value = fullNote;
+    editorContent.value = fullNote.content;
+
+    // 更新编辑器内容
+    const editor = editorRef.value;
+    if (editor) {
+      editor.setContent(fullNote.content);
+    }
+  } catch (err) {
+    console.error("获取笔记内容失败:", err);
+  }
+};
+
+// 处理编辑器内容变化
+const handleEditorChange = async (content: string) => {
+  if (!currentNote.value) return;
+
+  // 清除之前的定时器
+  if (saveTimeout.value) {
+    clearTimeout(saveTimeout.value);
+  }
+
+  // 更新当前笔记的内容
+  currentNote.value.content = content;
+
+  // 设置新的定时器，延迟保存
+  saveTimeout.value = window.setTimeout(async () => {
+    try {
+      await ApiService.updateNote(currentNote.value!.id, {
+        content: currentNote.value!.content,
+        title: currentNote.value!.title,
+      });
+    } catch (err) {
+      console.error("保存笔记失败:", err);
+    }
+  }, 1000); // 1秒后自动保存
+};
+
+// 组件卸载时清理
+onUnmounted(() => {
+  if (saveTimeout.value) {
+    clearTimeout(saveTimeout.value);
+  }
 });
 
 // 模拟笔记数据

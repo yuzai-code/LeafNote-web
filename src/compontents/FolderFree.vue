@@ -93,29 +93,29 @@
           >
             <!-- 展开/折叠图标 -->
             <div class="flex items-center gap-2 flex-1">
-              <svg
-                class="w-4 h-4 transition-transform"
-                :class="{ 'rotate-90': folder.expanded }"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-              <!-- 文件夹图标 -->
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                />
-              </svg>
+            <svg
+              class="w-4 h-4 transition-transform"
+              :class="{ 'rotate-90': folder.expanded }"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+            <!-- 文件夹图标 -->
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+              />
+            </svg>
               <!-- 目录名称/重命名输入框 -->
               <div class="flex-1">
                 <input
@@ -144,7 +144,7 @@
           <div v-if="folder.expanded" class="mt-1">
             <!-- 显示笔记 -->
             <template v-if="folder.notes?.length">
-              <div v-for="note in folder.notes" :key="note.id" class="cursor-pointer">
+              <div v-for="note in folder.notes" :key="note.id" class="cursor-pointer" @click="handleNoteClick(note)">
                 <div
                   class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
                   :class="{
@@ -179,37 +179,37 @@
                     }"
                     :style="{ '--depth': child.path.split('/').length - 1 }"
                     @click="toggleFolder(child)"
-                  >
-                    <!-- 展开/折叠图标 -->
+                >
+                  <!-- 展开/折叠图标 -->
                     <div class="flex items-center gap-2 flex-1">
-                      <svg
-                        class="w-4 h-4 transition-transform"
-                        :class="{ 'rotate-90': child.expanded }"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                      <!-- 文件夹图标 -->
-                      <svg
-                        class="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                        />
-                      </svg>
+                  <svg
+                    class="w-4 h-4 transition-transform"
+                    :class="{ 'rotate-90': child.expanded }"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                  <!-- 文件夹图标 -->
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                    />
+                  </svg>
                       <!-- 目录名称/重命名输入框 -->
                       <div class="flex-1">
                         <input
@@ -436,7 +436,7 @@ const handleCreateFolder = async () => {
   } catch (err: unknown) {
     console.error("创建目录失败:", err);
     if (err instanceof Error) {
-      error.value = err.message;
+    error.value = err.message;
     } else {
       error.value = "创建目录失败";
     }
@@ -593,6 +593,15 @@ const handleDeleteFolder = async (folder: Category) => {
       error.value = "删除目录失败";
     }
   }
+};
+
+const emit = defineEmits<{
+  (e: 'select-note', note: Note): void;
+}>();
+
+// 处理笔记点击
+const handleNoteClick = (note: Note) => {
+  emit('select-note', note);
 };
 
 // 组件挂载时获取数据

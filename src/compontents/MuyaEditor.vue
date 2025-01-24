@@ -61,10 +61,6 @@ onMounted(() => {
 
   editor = new Muya(editorRef.value, {
     markdown: props.modelValue || "",
-    spellcheckEnabled: props.spellcheck ?? false,
-    autoFocus: props.autoFocus ?? false,
-    preferLooseListItem: true,
-    hideSuggest: false,
   });
 
   // 设置中文语言
@@ -74,7 +70,21 @@ onMounted(() => {
   editor.init();
 
   // 监听事件
-  editor.on("change", () => {
+  editor.on("json-change", () => {
+    const content = editor?.getMarkdown() || "";
+    emit("update:modelValue", content);
+    emit("change", content);
+  });
+
+  // 监听 text-change 事件
+  editor.on("text-change", () => {
+    const content = editor?.getMarkdown() || "";
+    emit("update:modelValue", content);
+    emit("change", content);
+  });
+
+  // 监听 selection-change 事件
+  editor.on("selection-change", () => {
     const content = editor?.getMarkdown() || "";
     emit("update:modelValue", content);
     emit("change", content);
