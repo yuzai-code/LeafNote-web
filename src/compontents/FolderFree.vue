@@ -84,14 +84,15 @@
         <!-- 文件夹项 -->
         <div class="cursor-pointer">
           <div
-            class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
+            class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg cursor-pointer"
             :class="{
               'pl-[calc(12px*var(--depth,1))]': folder.path.split('/').length - 1,
             }"
             :style="{ '--depth': folder.path.split('/').length - 1 }"
+            @click="toggleFolder(folder)"
           >
             <!-- 展开/折叠图标 -->
-            <div class="flex items-center gap-2 flex-1 cursor-pointer" @click="toggleFolder(folder)">
+            <div class="flex items-center gap-2 flex-1">
               <svg
                 class="w-4 h-4 transition-transform"
                 :class="{ 'rotate-90': folder.expanded }"
@@ -130,26 +131,29 @@
                 <span v-else class="text-sm">{{ folder.name }}</span>
               </div>
             </div>
-            <FolderItem 
-              @create-note="handleCreateNote(folder)"
-              @create-folder="handleCreateSubFolder(folder)"
-              @rename="startRename(folder)"
-              @delete="handleDeleteFolder(folder)"
-            />
+            <div @click.stop>
+              <FolderItem 
+                @create-note="handleCreateNote(folder)"
+                @create-folder="handleCreateSubFolder(folder)"
+                @rename="startRename(folder)"
+                @delete="handleDeleteFolder(folder)"
+              />
+            </div>
           </div>
           <!-- 子文件夹 -->
           <div v-if="folder.expanded && folder.children?.length" class="mt-1">
             <template v-for="child in folder.children" :key="child.id">
               <div class="cursor-pointer">
                 <div
-                  class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
+                  class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg cursor-pointer"
                   :class="{
                     'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length - 1,
                   }"
                   :style="{ '--depth': child.path.split('/').length - 1 }"
+                  @click="toggleFolder(child)"
                 >
                   <!-- 展开/折叠图标 -->
-                  <div class="flex items-center gap-2 flex-1 cursor-pointer" @click="toggleFolder(child)">
+                  <div class="flex items-center gap-2 flex-1">
                     <svg
                       class="w-4 h-4 transition-transform"
                       :class="{ 'rotate-90': child.expanded }"
@@ -193,12 +197,14 @@
                       <span v-else class="text-sm">{{ child.name }}</span>
                     </div>
                   </div>
-                  <FolderItem 
-                    @create-note="handleCreateNote(child)"
-                    @create-folder="handleCreateSubFolder(child)"
-                    @rename="startRename(child)"
-                    @delete="handleDeleteFolder(child)"
-                  />
+                  <div @click.stop>
+                    <FolderItem 
+                      @create-note="handleCreateNote(child)"
+                      @create-folder="handleCreateSubFolder(child)"
+                      @rename="startRename(child)"
+                      @delete="handleDeleteFolder(child)"
+                    />
+                  </div>
                 </div>
               </div>
             </template>
