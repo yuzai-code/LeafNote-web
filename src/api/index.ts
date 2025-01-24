@@ -33,7 +33,9 @@ export interface Category {
   parent?: Category | null
   children?: Category[]
   notes?: Note[]
-  expanded?: boolean;
+  expanded?: boolean
+  isEditing?: boolean
+  editingName?: string
 }
 
 export interface Tag {

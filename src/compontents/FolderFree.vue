@@ -62,8 +62,18 @@
 
     <!-- 错误提示 -->
     <div v-if="error" class="alert alert-error mb-4">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="stroke-current shrink-0 h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
       </svg>
       <span>{{ error }}</span>
     </div>
@@ -105,8 +115,25 @@
                 d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
               />
             </svg>
-            <span class="text-sm flex-1">{{ folder.name }}</span>
-            <FolderItem />
+            <!-- 目录名称/重命名输入框 -->
+            <div class="flex-1" @click.stop>
+              <input
+                v-if="folder.isEditing"
+                :ref="el => setInputRef(el, folder.id)"
+                v-model="folder.editingName"
+                class="input input-sm input-bordered w-full"
+                @blur="handleRename(folder)"
+                @keyup.enter="handleRename(folder)"
+                @keyup.esc="cancelRename(folder)"
+              />
+              <span v-else class="text-sm">{{ folder.name }}</span>
+            </div>
+            <FolderItem 
+              @create-note="handleCreateNote(folder)"
+              @create-folder="handleCreateSubFolder(folder)"
+              @rename="startRename(folder)"
+              @delete="handleDeleteFolder(folder)"
+            />
           </div>
           <!-- 子文件夹 -->
           <div v-if="folder.expanded && folder.children?.length" class="mt-1">
@@ -149,8 +176,25 @@
                       d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
                     />
                   </svg>
-                  <span class="text-sm flex-1">{{ child.name }}</span>
-                  <FolderItem />
+                  <!-- 目录名称/重命名输入框 -->
+                  <div class="flex-1" @click.stop>
+                    <input
+                      v-if="child.isEditing"
+                      :ref="el => setInputRef(el, child.id)"
+                      v-model="child.editingName"
+                      class="input input-sm input-bordered w-full"
+                      @blur="handleRename(child)"
+                      @keyup.enter="handleRename(child)"
+                      @keyup.esc="cancelRename(child)"
+                    />
+                    <span v-else class="text-sm">{{ child.name }}</span>
+                  </div>
+                  <FolderItem 
+                    @create-note="handleCreateNote(child)"
+                    @create-folder="handleCreateSubFolder(child)"
+                    @rename="startRename(child)"
+                    @delete="handleDeleteFolder(child)"
+                  />
                 </div>
               </div>
             </template>
@@ -162,53 +206,111 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick, reactive } from "vue";
+import type { ComponentPublicInstance } from 'vue';
 import { ApiService, Category, Note } from "../api";
 import FolderItem from "./FolderItem.vue";
 
 // 目录列表状态
-const folders = ref<Category[]>([]);
+const folders = ref<(Category & { expanded?: boolean; isEditing?: boolean; editingName?: string })[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const renameInputs = reactive<Record<string, HTMLInputElement | null>>({});
+
+// 设置输入框引用
+const setInputRef = (el: ComponentPublicInstance | Element | null, id: string) => {
+  if (el instanceof HTMLInputElement) {
+    renameInputs[id] = el;
+  } else if (el && 'focus' in el && typeof el.focus === 'function') {
+    renameInputs[id] = el as unknown as HTMLInputElement;
+  } else {
+    renameInputs[id] = null;
+  }
+};
 
 // 处理新建笔记
-const handleCreateNote = async () => {
+const handleCreateNote = async (folder: Category) => {
   try {
     const newNote: Partial<Note> = {
       title: "新建笔记",
       content: "",
-      category_id: "", // 可以根据当前选中的目录设置
+      category_id: folder.id,
       yaml_meta: "",
     };
 
     const createdNote = await ApiService.createNote(newNote);
     console.log("笔记创建成功:", createdNote);
     // TODO: 可以在这里添加成功提示或跳转到编辑页面
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("创建笔记失败:", err);
-    // TODO: 可以在这里添加错误提示
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "创建笔记失败";
+    }
   }
+};
+
+// 生成唯一的目录名称
+const generateUniqueName = (baseName: string, parentFolder?: Category): string => {
+  let counter = 1;
+  let existingNames: Set<string>;
+  
+  if (parentFolder) {
+    // 如果是子目录，使用父目录的子目录名称列表
+    existingNames = new Set(parentFolder.children?.map(f => f.name) || []);
+  } else {
+    // 如果是顶级目录，使用顶级目录名称列表
+    existingNames = new Set(folders.value.map(f => f.name));
+  }
+  
+  let newName = baseName;
+  while (existingNames.has(newName)) {
+    newName = `${baseName}${counter}`;
+    counter++;
+  }
+  
+  return newName;
 };
 
 // 处理新建目录
 const handleCreateFolder = async () => {
   try {
+    const defaultName = generateUniqueName("新建目录");
     const newCategory: Partial<Category> = {
-      name: "新建目录",
-      parent_id: null, // 可以根据当前选中的目录设置父目录
+      name: defaultName,
+      parent_id: null,
     };
-    
+
     const createdCategory = await ApiService.createCategory(newCategory);
     console.log("目录创建成功:", createdCategory);
-    
+
+    // 添加到目录列表并进入编辑状态
+    const newFolder = {
+      ...createdCategory,
+      expanded: false,
+      isEditing: true,
+      editingName: defaultName,
+    };
+    folders.value.push(newFolder);
+
+    // 等待 DOM 更新后聚焦输入框
+    await nextTick();
+    const input = renameInputs[newFolder.id];
+    if (input) {
+      input.focus();
+      input.select();
+    }
+
     // 清除错误信息
     error.value = null;
-    // 刷新目录列表
-    await fetchCategories();
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("创建目录失败:", err);
-    // 显示错误信息
-    error.value = err.message;
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "创建目录失败";
+    }
   }
 };
 
@@ -224,8 +326,13 @@ const fetchCategories = async () => {
   error.value = null;
   try {
     const categories = await ApiService.getCategories();
-    // 初始化expanded属性
-    folders.value = categories.map((category) => ({ ...category, expanded: false }));
+    // 初始化expanded和isEditing属性
+    folders.value = categories.map((category) => ({
+      ...category,
+      expanded: false,
+      isEditing: false,
+      editingName: category.name,
+    }));
   } catch (err) {
     error.value = "获取目录列表失败";
     console.error(err);
@@ -235,8 +342,128 @@ const fetchCategories = async () => {
 };
 
 // 切换文件夹展开/折叠状态
-const toggleFolder = (folder: Category) => {
+const toggleFolder = (folder: Category & { expanded?: boolean }) => {
   folder.expanded = !folder.expanded;
+};
+
+// 开始重命名
+const startRename = async (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+  folder.isEditing = true;
+  folder.editingName = folder.name;
+  await nextTick();
+  const input = renameInputs[folder.id];
+  if (input) {
+    input.focus();
+    input.select();
+  }
+};
+
+// 取消重命名
+const cancelRename = (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+  folder.isEditing = false;
+  folder.editingName = folder.name;
+};
+
+// 处理重命名
+const handleRename = async (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+  if (!folder.editingName?.trim() || folder.editingName === folder.name) {
+    cancelRename(folder);
+    return;
+  }
+
+  try {
+    const updatedCategory = await ApiService.updateCategory(folder.id, {
+      ...folder,
+      name: folder.editingName.trim(),
+    });
+
+    // 更新目录信息
+    Object.assign(folder, {
+      ...updatedCategory,
+      expanded: folder.expanded,
+      isEditing: false,
+    });
+  } catch (err: any) {
+    console.error("重命名失败:", err);
+    error.value = err.message;
+    cancelRename(folder);
+  }
+};
+
+// 处理新建子目录
+const handleCreateSubFolder = async (parentFolder: Category) => {
+  try {
+    const defaultName = generateUniqueName("新建目录", parentFolder);
+    const newCategory: Partial<Category> = {
+      name: defaultName,
+      parent_id: parentFolder.id,
+    };
+
+    const createdCategory = await ApiService.createCategory(newCategory);
+    console.log("目录创建成功:", createdCategory);
+
+    // 展开父目录
+    parentFolder.expanded = true;
+
+    // 添加到父目录的子目录列表
+    if (!parentFolder.children) {
+      parentFolder.children = [];
+    }
+    const newFolder = {
+      ...createdCategory,
+      expanded: false,
+      isEditing: true,
+      editingName: defaultName,
+    };
+    parentFolder.children.push(newFolder);
+
+    // 等待 DOM 更新后聚焦输入框
+    await nextTick();
+    const input = renameInputs[newFolder.id];
+    if (input) {
+      input.focus();
+      input.select();
+    }
+
+    error.value = null;
+  } catch (err: unknown) {
+    console.error("创建目录失败:", err);
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "创建目录失败";
+    }
+  }
+};
+
+// 处理删除目录
+const handleDeleteFolder = async (folder: Category) => {
+  if (!confirm(`确定要删除目录"${folder.name}"吗？`)) {
+    return;
+  }
+
+  try {
+    await ApiService.deleteCategory(folder.id);
+    
+    // 从目录列表或父目录的子目录列表中移除
+    if (folder.parent_id) {
+      const parentFolder = folders.value.find(f => f.id === folder.parent_id);
+      if (parentFolder && parentFolder.children) {
+        parentFolder.children = parentFolder.children.filter(f => f.id !== folder.id);
+      }
+    } else {
+      folders.value = folders.value.filter(f => f.id !== folder.id);
+    }
+
+    error.value = null;
+  } catch (err: unknown) {
+    console.error("删除目录失败:", err);
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "删除目录失败";
+    }
+  }
 };
 
 // 组件挂载时获取数据
