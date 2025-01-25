@@ -93,34 +93,34 @@
           >
             <!-- 展开/折叠图标 -->
             <div class="flex items-center gap-2 flex-1">
-            <svg
-              class="w-4 h-4 transition-transform"
-              :class="{ 'rotate-90': folder.expanded }"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-            <!-- 文件夹图标 -->
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-              />
-            </svg>
+              <svg
+                class="w-4 h-4 transition-transform"
+                :class="{ 'rotate-90': folder.expanded }"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+              <!-- 文件夹图标 -->
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                />
+              </svg>
               <!-- 目录名称/重命名输入框 -->
               <div class="flex-1">
                 <input
                   v-if="folder.isEditing"
-                  :ref="el => setInputRef(el, folder.id)"
+                  :ref="(el) => setInputRef(el, folder.id)"
                   v-model="folder.editingName"
                   class="input input-sm input-bordered w-full"
                   @blur="handleRename(folder)"
@@ -132,7 +132,7 @@
               </div>
             </div>
             <div @click.stop>
-              <FolderItem 
+              <FolderItem
                 @create-note="handleCreateNote(folder)"
                 @create-folder="handleCreateSubFolder(folder)"
                 @rename="startRename(folder)"
@@ -144,7 +144,12 @@
           <div v-if="folder.expanded" class="mt-1">
             <!-- 显示笔记 -->
             <template v-if="folder.notes?.length">
-              <div v-for="note in folder.notes" :key="note.id" class="cursor-pointer" @click="handleNoteClick(note)">
+              <div
+                v-for="note in folder.notes"
+                :key="note.id"
+                class="cursor-pointer"
+                @click="handleNoteClick(note)"
+              >
                 <div
                   class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
                   :class="{
@@ -155,7 +160,12 @@
                   <!-- 笔记图标 -->
                   <div class="flex items-center gap-2 flex-1">
                     <div class="w-4"></div>
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <svg
+                      class="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -179,42 +189,42 @@
                     }"
                     :style="{ '--depth': child.path.split('/').length - 1 }"
                     @click="toggleFolder(child)"
-                >
-                  <!-- 展开/折叠图标 -->
+                  >
+                    <!-- 展开/折叠图标 -->
                     <div class="flex items-center gap-2 flex-1">
-                  <svg
-                    class="w-4 h-4 transition-transform"
-                    :class="{ 'rotate-90': child.expanded }"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  <!-- 文件夹图标 -->
-                  <svg
-                    class="w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                    />
-                  </svg>
+                      <svg
+                        class="w-4 h-4 transition-transform"
+                        :class="{ 'rotate-90': child.expanded }"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                      <!-- 文件夹图标 -->
+                      <svg
+                        class="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                        />
+                      </svg>
                       <!-- 目录名称/重命名输入框 -->
                       <div class="flex-1">
                         <input
                           v-if="child.isEditing"
-                          :ref="el => setInputRef(el, child.id)"
+                          :ref="(el) => setInputRef(el, child.id)"
                           v-model="child.editingName"
                           class="input input-sm input-bordered w-full"
                           @blur="handleRename(child)"
@@ -226,7 +236,7 @@
                       </div>
                     </div>
                     <div @click.stop>
-                      <FolderItem 
+                      <FolderItem
                         @create-note="handleCreateNote(child)"
                         @create-folder="handleCreateSubFolder(child)"
                         @rename="startRename(child)"
@@ -236,7 +246,11 @@
                   </div>
                   <!-- 子目录的笔记 -->
                   <div v-if="child.expanded && child.notes?.length" class="mt-1">
-                    <div v-for="note in child.notes" :key="note.id" class="cursor-pointer">
+                    <div
+                      v-for="note in child.notes"
+                      :key="note.id"
+                      class="cursor-pointer"
+                    >
                       <div
                         class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
                         :class="{
@@ -247,7 +261,12 @@
                         <!-- 笔记图标 -->
                         <div class="flex items-center gap-2 flex-1">
                           <div class="w-4"></div>
-                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <svg
+                            class="w-4 h-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
                             <path
                               stroke-linecap="round"
                               stroke-linejoin="round"
@@ -272,12 +291,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, reactive } from "vue";
-import type { ComponentPublicInstance } from 'vue';
-import { ApiService, Category, Note } from "../api";
+import type { ComponentPublicInstance } from "vue";
+import { Category, Note } from "../api/types";
+import { ApiService } from "../api";
 import FolderItem from "./FolderItem.vue";
+import type { CategoryWithState } from "../api/types";
 
 // 目录列表状态
-const folders = ref<(Category & { expanded?: boolean; isEditing?: boolean; editingName?: string })[]>([]);
+const folders = ref<CategoryWithState[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const renameInputs = reactive<Record<string, HTMLInputElement | null>>({});
@@ -286,8 +307,8 @@ const renameInputs = reactive<Record<string, HTMLInputElement | null>>({});
 const setInputRef = (el: ComponentPublicInstance | Element | null, id: string) => {
   if (el instanceof HTMLInputElement) {
     renameInputs[id] = el;
-  } else if (el && 'focus' in el && typeof el.focus === 'function') {
-    renameInputs[id] = el as unknown as HTMLInputElement;
+  } else if (el && "focus" in el && typeof el.focus === "function") {
+    renameInputs[id] = (el as unknown) as HTMLInputElement;
   } else {
     renameInputs[id] = null;
   }
@@ -300,12 +321,12 @@ const generateUniqueNoteTitle = (baseName: string, folder: Category | null): str
 
   // 获取已存在的笔记标题
   if (folder && folder.notes) {
-    existingNames = new Set(folder.notes.map(note => note.title));
+    existingNames = new Set(folder.notes.map((note) => note.title));
   } else if (!folder) {
     // 如果是根目录，获取所有根目录下的笔记标题
-    folders.value.forEach(f => {
+    folders.value.forEach((f) => {
       if (f.notes) {
-        f.notes.forEach(note => existingNames.add(note.title));
+        f.notes.forEach((note) => existingNames.add(note.title));
       }
     });
   }
@@ -323,24 +344,29 @@ const generateUniqueNoteTitle = (baseName: string, folder: Category | null): str
 const generateUniqueFilePath = (title: string, folder: Category | null): string => {
   let counter = 1;
   // 确保目录路径以斜杠结尾
-  let basePath = folder ? (folder.path.endsWith('/') ? folder.path : folder.path + '/') : '/';
-  
+  let basePath = folder
+    ? folder.path.endsWith("/")
+      ? folder.path
+      : folder.path + "/"
+    : "/";
+
   // 将标题转换为合法的文件名（移除特殊字符，用连字符替换空格）
-  const safeTitle = title.toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-') // 保留中文字符、字母和数字，其他替换为连字符
-    .replace(/^-+|-+$/g, ''); // 移除开头和结尾的连字符
-  
+  const safeTitle = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-") // 保留中文字符、字母和数字，其他替换为连字符
+    .replace(/^-+|-+$/g, ""); // 移除开头和结尾的连字符
+
   let filePath = `${basePath}${safeTitle}.md`;
 
   // 如果文件路径已存在，添加数字后缀
   if (folder && folder.notes) {
-    const existingPaths = new Set(folder.notes.map(note => note.file_path));
+    const existingPaths = new Set(folder.notes.map((note) => note.file_path));
     while (existingPaths.has(filePath)) {
       filePath = `${basePath}${safeTitle}-${counter}.md`;
       counter++;
     }
   }
-  
+
   return filePath;
 };
 
@@ -359,7 +385,7 @@ const handleCreateNote = async (folder: Category | null) => {
 
     const createdNote = await ApiService.createNote(newNote);
     console.log("笔记创建成功:", createdNote);
-    
+
     // 将新笔记添加到对应的目录中
     if (folder) {
       if (!folder.notes) {
@@ -384,21 +410,21 @@ const handleCreateNote = async (folder: Category | null) => {
 const generateUniqueName = (baseName: string, parentFolder?: Category): string => {
   let counter = 1;
   let existingNames: Set<string>;
-  
+
   if (parentFolder) {
     // 如果是子目录，使用父目录的子目录名称列表
-    existingNames = new Set(parentFolder.children?.map(f => f.name) || []);
+    existingNames = new Set(parentFolder.children?.map((f) => f.name) || []);
   } else {
     // 如果是顶级目录，使用顶级目录名称列表
-    existingNames = new Set(folders.value.map(f => f.name));
+    existingNames = new Set(folders.value.map((f) => f.name));
   }
-  
+
   let newName = baseName;
   while (existingNames.has(newName)) {
     newName = `${baseName}${counter}`;
     counter++;
   }
-  
+
   return newName;
 };
 
@@ -436,7 +462,7 @@ const handleCreateFolder = async () => {
   } catch (err: unknown) {
     console.error("创建目录失败:", err);
     if (err instanceof Error) {
-    error.value = err.message;
+      error.value = err.message;
     } else {
       error.value = "创建目录失败";
     }
@@ -455,13 +481,12 @@ const fetchCategories = async () => {
   error.value = null;
   try {
     const categories = await ApiService.getCategories();
-    // 初始化expanded和isEditing属性
     folders.value = categories.map((category) => ({
       ...category,
       expanded: false,
       isEditing: false,
       editingName: category.name,
-    }));
+    })) as CategoryWithState[];
   } catch (err) {
     error.value = "获取目录列表失败";
     console.error(err);
@@ -471,12 +496,14 @@ const fetchCategories = async () => {
 };
 
 // 切换文件夹展开/折叠状态
-const toggleFolder = (folder: Category & { expanded?: boolean }) => {
+const toggleFolder = (folder: CategoryWithState) => {
   folder.expanded = !folder.expanded;
 };
 
 // 开始重命名
-const startRename = async (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+const startRename = async (
+  folder: Category & { isEditing?: boolean; editingName?: string }
+) => {
   folder.isEditing = true;
   folder.editingName = folder.name;
   await nextTick();
@@ -488,13 +515,17 @@ const startRename = async (folder: Category & { isEditing?: boolean; editingName
 };
 
 // 取消重命名
-const cancelRename = (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+const cancelRename = (
+  folder: Category & { isEditing?: boolean; editingName?: string }
+) => {
   folder.isEditing = false;
   folder.editingName = folder.name;
 };
 
 // 处理重命名
-const handleRename = async (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+const handleRename = async (
+  folder: Category & { isEditing?: boolean; editingName?: string }
+) => {
   if (!folder.editingName?.trim() || folder.editingName === folder.name) {
     cancelRename(folder);
     return;
@@ -508,7 +539,7 @@ const handleRename = async (folder: Category & { isEditing?: boolean; editingNam
 
     // 更新目录信息
     Object.assign(folder, {
-      ...updatedCategory,
+      ...(updatedCategory as CategoryWithState),
       expanded: folder.expanded,
       isEditing: false,
     });
@@ -573,15 +604,15 @@ const handleDeleteFolder = async (folder: Category) => {
 
   try {
     await ApiService.deleteCategory(folder.id);
-    
+
     // 从目录列表或父目录的子目录列表中移除
     if (folder.parent_id) {
-      const parentFolder = folders.value.find(f => f.id === folder.parent_id);
+      const parentFolder = folders.value.find((f) => f.id === folder.parent_id);
       if (parentFolder && parentFolder.children) {
-        parentFolder.children = parentFolder.children.filter(f => f.id !== folder.id);
+        parentFolder.children = parentFolder.children.filter((f) => f.id !== folder.id);
       }
     } else {
-      folders.value = folders.value.filter(f => f.id !== folder.id);
+      folders.value = folders.value.filter((f) => f.id !== folder.id);
     }
 
     error.value = null;
@@ -596,12 +627,12 @@ const handleDeleteFolder = async (folder: Category) => {
 };
 
 const emit = defineEmits<{
-  (e: 'select-note', note: Note): void;
+  (e: "select-note", note: Note): void;
 }>();
 
 // 处理笔记点击
 const handleNoteClick = (note: Note) => {
-  emit('select-note', note);
+  emit("select-note", note);
 };
 
 // 组件挂载时获取数据

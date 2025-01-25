@@ -47,7 +47,7 @@ import { ref, onUnmounted } from "vue";
 import FolderFree from "../compontents/FolderFree.vue";
 import MuyaEditor from "../compontents/MuyaEditor.vue";
 import { Note } from "../api/types";
-import { ApiService } from "../api";
+import { ApiService } from "../api/index";
 
 const SIDEBAR_WIDTH_KEY = "leafnote-sidebar-width";
 const DEFAULT_WIDTH = 280;
