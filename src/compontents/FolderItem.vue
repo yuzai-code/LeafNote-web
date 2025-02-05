@@ -6,7 +6,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
       </svg>
     </button>
-    <div class="dropdown">
+    <div class="dropdown dropdown-bottom">
       <!-- 更多操作按钮 -->
       <button class="btn btn-ghost btn-xs" @click.stop>
         <svg class="h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">

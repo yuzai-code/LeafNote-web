@@ -10,7 +10,7 @@
     </div>
 
     <!-- 操作按钮组 -->
-    <div class="flex gap-2 mb-4">
+    <div class="flex gap-2 mb-4 flex-none">
       <button
         class="btn btn-sm btn-outline tooltip tooltip-bottom"
         data-tip="新建笔记"
@@ -79,59 +79,61 @@
     </div>
 
     <!-- 目录树容器 -->
-    <div v-else class="flex-1 min-h-0">
-      <ul class="menu menu-xs bg-base-200 rounded-lg w-full h-full overflow-y-auto overflow-x-hidden">
-        <template v-for="folder in folders" :key="folder.id">
-          <li>
-            <details :open="folder.expanded">
-              <summary @click.prevent="toggleFolder(folder)" class="flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="h-4 w-4 shrink-0"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-                  />
-                </svg>
-                <span class="truncate">{{ folder.name }}</span>
-                <FolderItem />
-              </summary>
-              <ul v-if="folder.children?.length">
-                <template v-for="child in folder.children" :key="child.id">
-                  <li>
-                    <details :open="child.expanded">
-                      <summary @click.prevent="toggleFolder(child)" class="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="h-4 w-4 shrink-0"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-                          />
-                        </svg>
-                        <span class="truncate">{{ child.name }}</span>
-                        <FolderItem />
-                      </summary>
-                    </details>
-                  </li>
-                </template>
-              </ul>
-            </details>
-          </li>
-        </template>
-      </ul>
+    <div class="flex-1 min-h-0 overflow-hidden">
+      <div class="h-full overflow-y-auto overflow-x-hidden">
+        <ul class="menu menu-xs bg-base-200 rounded-lg">
+          <template v-for="folder in folders" :key="folder.id">
+            <li>
+              <details :open="folder.expanded">
+                <summary @click.prevent="toggleFolder(folder)" class="flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="h-4 w-4 shrink-0"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                    />
+                  </svg>
+                  <span class="truncate flex-1 min-w-0">{{ folder.name }}</span>
+                  <FolderItem class="shrink-0" />
+                </summary>
+                <ul v-if="folder.children?.length">
+                  <template v-for="child in folder.children" :key="child.id">
+                    <li>
+                      <details :open="child.expanded">
+                        <summary @click.prevent="toggleFolder(child)" class="flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="h-4 w-4 shrink-0"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                            />
+                          </svg>
+                          <span class="truncate flex-1 min-w-0">{{ child.name }}</span>
+                          <FolderItem class="shrink-0" />
+                        </summary>
+                      </details>
+                    </li>
+                  </template>
+                </ul>
+              </details>
+            </li>
+          </template>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -477,10 +479,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.menu {
+  display: block !important;
+  columns: 1 !important;
+  column-count: 1 !important;
+}
+
+.menu li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
 .menu :where(li:not(.menu-title) > *:not(ul):not(details):not(.menu-title)),
 .menu :where(li:not(.menu-title) > details > summary:not(.menu-title)) {
+  @apply px-4 py-2;
   padding-left: calc(var(--padding-left, 1rem) + 0.5rem);
-  white-space: nowrap;
 }
 
 .menu li details {
@@ -488,42 +501,40 @@ onMounted(() => {
 }
 
 /* 自定义滚动条样式 */
-.menu {
+.overflow-y-auto {
   scrollbar-width: thin;
-  scrollbar-gutter: stable;
 }
 
-.menu::-webkit-scrollbar {
+.overflow-y-auto::-webkit-scrollbar {
   width: 4px;
   height: 0;
   display: none;
 }
 
-.menu:hover::-webkit-scrollbar {
+.overflow-y-auto:hover::-webkit-scrollbar {
   display: block;
 }
 
-.menu::-webkit-scrollbar-track {
+.overflow-y-auto::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.menu::-webkit-scrollbar-thumb {
+.overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 2px;
 }
 
-.menu::-webkit-scrollbar-thumb:hover {
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
 /* 确保文件夹名称不会导致布局溢出 */
 .menu summary {
-  min-width: 0;
-  width: 100%;
+  display: flex !important;
+  align-items: center;
 }
 
 .menu summary > span {
-  flex: 1;
-  min-width: 0;
+  @apply flex-1 min-w-0;
 }
 </style>
