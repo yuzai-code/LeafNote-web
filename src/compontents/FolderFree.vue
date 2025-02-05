@@ -9,13 +9,72 @@
       />
     </div>
 
+    <!-- 操作按钮组 -->
+    <div class="flex gap-2 mb-4">
+      <button
+        class="btn btn-sm btn-outline tooltip tooltip-bottom"
+        data-tip="新建笔记"
+        @click="() => handleCreateNote(null)"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+      </button>
+      <button
+        class="btn btn-sm btn-outline tooltip tooltip-bottom"
+        data-tip="新建目录"
+        @click="handleCreateFolder"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 13h6m-3-3v6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+          />
+        </svg>
+      </button>
+      <button
+        class="btn btn-sm btn-outline tooltip tooltip-bottom"
+        data-tip="排序"
+        @click="handleSort"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 4h13M3 8h9M3 12h5m8 0l-4-4m4 4l-4 4"
+          />
+        </svg>
+      </button>
+    </div>
+
     <!-- 加载状态 -->
     <div v-if="loading" class="flex justify-center items-center py-4">
       <div class="loading loading-spinner loading-md"></div>
     </div>
 
     <!-- 错误提示 -->
-    <div v-else-if="error" class="alert alert-error">
+    <div v-if="error" class="alert alert-error mb-4">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="stroke-current shrink-0 h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
       <span>{{ error }}</span>
     </div>
 
@@ -78,14 +137,183 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { ApiService, Category } from "../api";
+import { ref, onMounted, nextTick, reactive } from "vue";
+import type { ComponentPublicInstance } from 'vue';
+import { ApiService, Category, Note } from "../api";
 import FolderItem from "./FolderItem.vue";
 
 // 目录列表状态
-const folders = ref<Category[]>([]);
+const folders = ref<(Category & { expanded?: boolean; isEditing?: boolean; editingName?: string })[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const renameInputs = reactive<Record<string, HTMLInputElement | null>>({});
+
+// 设置输入框引用
+const setInputRef = (el: ComponentPublicInstance | Element | null, id: string) => {
+  if (el instanceof HTMLInputElement) {
+    renameInputs[id] = el;
+  } else if (el && 'focus' in el && typeof el.focus === 'function') {
+    renameInputs[id] = el as unknown as HTMLInputElement;
+  } else {
+    renameInputs[id] = null;
+  }
+};
+
+// 生成唯一的笔记标题
+const generateUniqueNoteTitle = (baseName: string, folder: Category | null): string => {
+  let counter = 1;
+  let existingNames = new Set<string>();
+
+  // 获取已存在的笔记标题
+  if (folder && folder.notes) {
+    existingNames = new Set(folder.notes.map(note => note.title));
+  } else if (!folder) {
+    // 如果是根目录，获取所有根目录下的笔记标题
+    folders.value.forEach(f => {
+      if (f.notes) {
+        f.notes.forEach(note => existingNames.add(note.title));
+      }
+    });
+  }
+
+  let newName = baseName;
+  while (existingNames.has(newName)) {
+    newName = `${baseName}${counter}`;
+    counter++;
+  }
+
+  return newName;
+};
+
+// 生成唯一的文件路径
+const generateUniqueFilePath = (title: string, folder: Category | null): string => {
+  let counter = 1;
+  // 确保目录路径以斜杠结尾
+  let basePath = folder ? (folder.path.endsWith('/') ? folder.path : folder.path + '/') : '/';
+  
+  // 将标题转换为合法的文件名（移除特殊字符，用连字符替换空格）
+  const safeTitle = title.toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-') // 保留中文字符、字母和数字，其他替换为连字符
+    .replace(/^-+|-+$/g, ''); // 移除开头和结尾的连字符
+  
+  let filePath = `${basePath}${safeTitle}.md`;
+
+  // 如果文件路径已存在，添加数字后缀
+  if (folder && folder.notes) {
+    const existingPaths = new Set(folder.notes.map(note => note.file_path));
+    while (existingPaths.has(filePath)) {
+      filePath = `${basePath}${safeTitle}-${counter}.md`;
+      counter++;
+    }
+  }
+  
+  return filePath;
+};
+
+// 处理新建笔记
+const handleCreateNote = async (folder: Category | null) => {
+  try {
+    const title = generateUniqueNoteTitle("新建笔记", folder);
+    const filePath = generateUniqueFilePath(title, folder);
+    const newNote: Partial<Note> = {
+      title,
+      content: "",
+      category_id: folder?.id,
+      yaml_meta: "",
+      file_path: filePath,
+    };
+
+    const createdNote = await ApiService.createNote(newNote);
+    console.log("笔记创建成功:", createdNote);
+    
+    // 将新笔记添加到对应的目录中
+    if (folder) {
+      if (!folder.notes) {
+        folder.notes = [];
+      }
+      folder.notes.push(createdNote);
+    } else {
+      // 如果是根目录，刷新目录列表
+      await fetchCategories();
+    }
+  } catch (err: unknown) {
+    console.error("创建笔记失败:", err);
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "创建笔记失败";
+    }
+  }
+};
+
+// 生成唯一的目录名称
+const generateUniqueName = (baseName: string, parentFolder?: Category): string => {
+  let counter = 1;
+  let existingNames: Set<string>;
+  
+  if (parentFolder) {
+    // 如果是子目录，使用父目录的子目录名称列表
+    existingNames = new Set(parentFolder.children?.map(f => f.name) || []);
+  } else {
+    // 如果是顶级目录，使用顶级目录名称列表
+    existingNames = new Set(folders.value.map(f => f.name));
+  }
+  
+  let newName = baseName;
+  while (existingNames.has(newName)) {
+    newName = `${baseName}${counter}`;
+    counter++;
+  }
+  
+  return newName;
+};
+
+// 处理新建目录
+const handleCreateFolder = async () => {
+  try {
+    const defaultName = generateUniqueName("新建目录");
+    const newCategory: Partial<Category> = {
+      name: defaultName,
+      parent_id: null,
+    };
+
+    const createdCategory = await ApiService.createCategory(newCategory);
+    console.log("目录创建成功:", createdCategory);
+
+    // 添加到目录列表并进入编辑状态
+    const newFolder = {
+      ...createdCategory,
+      expanded: false,
+      isEditing: true,
+      editingName: defaultName,
+    };
+    folders.value.push(newFolder);
+
+    // 等待 DOM 更新后聚焦输入框
+    await nextTick();
+    const input = renameInputs[newFolder.id];
+    if (input) {
+      input.focus();
+      input.select();
+    }
+
+    // 清除错误信息
+    error.value = null;
+  } catch (err: unknown) {
+    console.error("创建目录失败:", err);
+    if (err instanceof Error) {
+    error.value = err.message;
+    } else {
+      error.value = "创建目录失败";
+    }
+  }
+};
+
+// 处理排序
+const handleSort = () => {
+  // TODO: 实现排序逻辑
+  console.log("排序");
+};
 
 // 获取目录列表
 const fetchCategories = async () => {
@@ -93,8 +321,13 @@ const fetchCategories = async () => {
   error.value = null;
   try {
     const categories = await ApiService.getCategories();
-    // 初始化expanded属性
-    folders.value = categories.map(category => ({ ...category, expanded: false }));
+    // 初始化expanded和isEditing属性
+    folders.value = categories.map((category) => ({
+      ...category,
+      expanded: false,
+      isEditing: false,
+      editingName: category.name,
+    }));
   } catch (err) {
     error.value = "获取目录列表失败";
     console.error(err);
@@ -104,8 +337,137 @@ const fetchCategories = async () => {
 };
 
 // 切换文件夹展开/折叠状态
-const toggleFolder = (folder: Category) => {
+const toggleFolder = (folder: Category & { expanded?: boolean }) => {
   folder.expanded = !folder.expanded;
+};
+
+// 开始重命名
+const startRename = async (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+  folder.isEditing = true;
+  folder.editingName = folder.name;
+  await nextTick();
+  const input = renameInputs[folder.id];
+  if (input) {
+    input.focus();
+    input.select();
+  }
+};
+
+// 取消重命名
+const cancelRename = (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+  folder.isEditing = false;
+  folder.editingName = folder.name;
+};
+
+// 处理重命名
+const handleRename = async (folder: Category & { isEditing?: boolean; editingName?: string }) => {
+  if (!folder.editingName?.trim() || folder.editingName === folder.name) {
+    cancelRename(folder);
+    return;
+  }
+
+  try {
+    const updatedCategory = await ApiService.updateCategory(folder.id, {
+      ...folder,
+      name: folder.editingName.trim(),
+    });
+
+    // 更新目录信息
+    Object.assign(folder, {
+      ...updatedCategory,
+      expanded: folder.expanded,
+      isEditing: false,
+    });
+  } catch (err: any) {
+    console.error("重命名失败:", err);
+    error.value = err.message;
+    cancelRename(folder);
+  }
+};
+
+// 处理新建子目录
+const handleCreateSubFolder = async (parentFolder: Category) => {
+  try {
+    const defaultName = generateUniqueName("新建目录", parentFolder);
+    const newCategory: Partial<Category> = {
+      name: defaultName,
+      parent_id: parentFolder.id,
+    };
+
+    const createdCategory = await ApiService.createCategory(newCategory);
+    console.log("目录创建成功:", createdCategory);
+
+    // 展开父目录
+    parentFolder.expanded = true;
+
+    // 添加到父目录的子目录列表
+    if (!parentFolder.children) {
+      parentFolder.children = [];
+    }
+    const newFolder = {
+      ...createdCategory,
+      expanded: false,
+      isEditing: true,
+      editingName: defaultName,
+    };
+    parentFolder.children.push(newFolder);
+
+    // 等待 DOM 更新后聚焦输入框
+    await nextTick();
+    const input = renameInputs[newFolder.id];
+    if (input) {
+      input.focus();
+      input.select();
+    }
+
+    error.value = null;
+  } catch (err: unknown) {
+    console.error("创建目录失败:", err);
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "创建目录失败";
+    }
+  }
+};
+
+// 处理删除目录
+const handleDeleteFolder = async (folder: Category) => {
+  if (!confirm(`确定要删除目录"${folder.name}"吗？`)) {
+    return;
+  }
+
+  try {
+    await ApiService.deleteCategory(folder.id);
+    
+    // 从目录列表或父目录的子目录列表中移除
+    if (folder.parent_id) {
+      const parentFolder = folders.value.find(f => f.id === folder.parent_id);
+      if (parentFolder && parentFolder.children) {
+        parentFolder.children = parentFolder.children.filter(f => f.id !== folder.id);
+      }
+    } else {
+      folders.value = folders.value.filter(f => f.id !== folder.id);
+    }
+
+    error.value = null;
+  } catch (err: unknown) {
+    console.error("删除目录失败:", err);
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = "删除目录失败";
+    }
+  }
+};
+
+const emit = defineEmits<{
+  (e: 'select-note', note: Note): void;
+}>();
+
+// 处理笔记点击
+const handleNoteClick = (note: Note) => {
+  emit('select-note', note);
 };
 
 // 组件挂载时获取数据

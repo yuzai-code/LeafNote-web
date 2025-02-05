@@ -22,11 +22,18 @@
     </div>
   </div>
 </template>
-    
-<script setup lang='ts'>
-    
+
+<script setup lang="ts">
+defineEmits<{
+  (e: "create-note"): void;
+  (e: "create-folder"): void;
+  (e: "rename"): void;
+  (e: "delete"): void;
+}>();
 </script>
-    
-<style>
-    
+
+<style scoped>
+.dropdown-content {
+  min-width: 8rem;
+}
 </style>
