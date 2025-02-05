@@ -1,7 +1,7 @@
 <template>
   <div class="h-full p-4 flex flex-col">
     <!-- 搜索框 -->
-    <div class="form-control mb-4">
+    <div class="form-control mb-4 flex-none">
       <input
         type="text"
         placeholder="搜索文件夹..."
@@ -19,93 +19,60 @@
       <span>{{ error }}</span>
     </div>
 
-    <!-- 目录树 -->
-    <div v-else class="flex-1">
-      <template v-for="folder in folders" :key="folder.id">
-        <!-- 文件夹项 -->
-        <div class="cursor-pointer">
-          <div
-            class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
-            :class="{ 'pl-[calc(12px*var(--depth,1))]': folder.path.split('/').length - 1 }"
-            :style="{ '--depth': folder.path.split('/').length - 1 }"
-            @click="toggleFolder(folder)"
-          >
-            <!-- 展开/折叠图标 -->
-            <svg
-              class="w-4 h-4 transition-transform"
-              :class="{ 'rotate-90': folder.expanded }"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-            <!-- 文件夹图标 -->
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-              />
-            </svg>
-            <span class="text-sm flex-1">{{ folder.name }}</span>
-            <FolderItem />
-          </div>
-          <!-- 子文件夹 -->
-          <div v-if="folder.expanded && folder.children?.length" class="mt-1">
-            <template v-for="child in folder.children" :key="child.id">
-              <div class="cursor-pointer">
-                <div
-                  class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg"
-                  :class="{
-                    'pl-[calc(12px*var(--depth,1))]': child.path.split('/').length - 1,
-                  }"
-                  :style="{ '--depth': child.path.split('/').length - 1 }"
-                  @click.stop="toggleFolder(child)"
+    <!-- 目录树容器 -->
+    <div v-else class="flex-1 min-h-0">
+      <ul class="menu menu-xs bg-base-200 rounded-lg w-full h-full overflow-y-auto overflow-x-hidden">
+        <template v-for="folder in folders" :key="folder.id">
+          <li>
+            <details :open="folder.expanded">
+              <summary @click.prevent="toggleFolder(folder)" class="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="h-4 w-4 shrink-0"
                 >
-                  <!-- 展开/折叠图标 -->
-                  <svg
-                    class="w-4 h-4 transition-transform"
-                    :class="{ 'rotate-90': child.expanded }"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                  <!-- 文件夹图标 -->
-                  <svg
-                    class="w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                    />
-                  </svg>
-                  <span class="text-sm flex-1">{{ child.name }}</span>
-                  <FolderItem />
-                </div>
-              </div>
-            </template>
-          </div>
-        </div>
-      </template>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                  />
+                </svg>
+                <span class="truncate">{{ folder.name }}</span>
+                <FolderItem />
+              </summary>
+              <ul v-if="folder.children?.length">
+                <template v-for="child in folder.children" :key="child.id">
+                  <li>
+                    <details :open="child.expanded">
+                      <summary @click.prevent="toggleFolder(child)" class="flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="h-4 w-4 shrink-0"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                          />
+                        </svg>
+                        <span class="truncate">{{ child.name }}</span>
+                        <FolderItem />
+                      </summary>
+                    </details>
+                  </li>
+                </template>
+              </ul>
+            </details>
+          </li>
+        </template>
+      </ul>
     </div>
   </div>
 </template>
@@ -148,8 +115,53 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 可以添加一些过渡动画效果 */
-.transition-transform {
-  transition: transform 0.2s ease-in-out;
+.menu :where(li:not(.menu-title) > *:not(ul):not(details):not(.menu-title)),
+.menu :where(li:not(.menu-title) > details > summary:not(.menu-title)) {
+  padding-left: calc(var(--padding-left, 1rem) + 0.5rem);
+  white-space: nowrap;
+}
+
+.menu li details {
+  --padding-left: calc(12px * var(--depth, 1));
+}
+
+/* 自定义滚动条样式 */
+.menu {
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+
+.menu::-webkit-scrollbar {
+  width: 4px;
+  height: 0;
+  display: none;
+}
+
+.menu:hover::-webkit-scrollbar {
+  display: block;
+}
+
+.menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.menu::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* 确保文件夹名称不会导致布局溢出 */
+.menu summary {
+  min-width: 0;
+  width: 100%;
+}
+
+.menu summary > span {
+  flex: 1;
+  min-width: 0;
 }
 </style>
