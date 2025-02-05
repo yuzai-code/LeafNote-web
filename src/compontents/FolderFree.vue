@@ -1,7 +1,7 @@
 <template>
   <div class="h-full p-4 flex flex-col">
     <!-- 搜索框 -->
-    <div class="form-control mb-2">
+    <div class="form-control mb-4 flex-none">
       <input
         type="text"
         placeholder="搜索文件夹..."
@@ -10,7 +10,7 @@
     </div>
 
     <!-- 操作按钮组 -->
-    <div class="flex gap-2 mb-4">
+    <div class="flex gap-2 mb-4 flex-none">
       <button
         class="btn btn-sm btn-outline tooltip tooltip-bottom"
         data-tip="新建笔记"
@@ -270,21 +270,21 @@
                             <path
                               stroke-linecap="round"
                               stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
                             />
                           </svg>
-                          <span class="text-sm flex-1">{{ note.title }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </div>
-        </div>
-      </template>
+                          <span class="truncate flex-1 min-w-0">{{ child.name }}</span>
+                          <FolderItem class="shrink-0" />
+                        </summary>
+                      </details>
+                    </li>
+                  </template>
+                </ul>
+              </details>
+            </li>
+          </template>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -642,8 +642,62 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 可以添加一些过渡动画效果 */
-.transition-transform {
-  transition: transform 0.2s ease-in-out;
+.menu {
+  display: block !important;
+  columns: 1 !important;
+  column-count: 1 !important;
+}
+
+.menu li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.menu :where(li:not(.menu-title) > *:not(ul):not(details):not(.menu-title)),
+.menu :where(li:not(.menu-title) > details > summary:not(.menu-title)) {
+  @apply px-4 py-2;
+  padding-left: calc(var(--padding-left, 1rem) + 0.5rem);
+}
+
+.menu li details {
+  --padding-left: calc(12px * var(--depth, 1));
+}
+
+/* 自定义滚动条样式 */
+.overflow-y-auto {
+  scrollbar-width: thin;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+  height: 0;
+  display: none;
+}
+
+.overflow-y-auto:hover::-webkit-scrollbar {
+  display: block;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* 确保文件夹名称不会导致布局溢出 */
+.menu summary {
+  display: flex !important;
+  align-items: center;
+}
+
+.menu summary > span {
+  @apply flex-1 min-w-0;
 }
 </style>
