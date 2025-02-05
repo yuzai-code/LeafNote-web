@@ -83,6 +83,7 @@
       <template v-for="folder in folders" :key="folder.id">
         <!-- 文件夹项 -->
         <div class="cursor-pointer">
+
           <div
             class="flex items-center gap-2 p-2 hover:bg-base-200 rounded-lg cursor-pointer"
             :class="{
@@ -275,17 +276,19 @@
                           </svg>
                           <span class="truncate flex-1 min-w-0">{{ child.name }}</span>
                           <FolderItem class="shrink-0" />
-                        </summary>
-                      </details>
-                    </li>
-                  </template>
-                </ul>
-              </details>
-            </li>
+                     </div>
+                     </div>
+                    </div>
+                  </div>
+                </div>
+                </template>
           </template>
-        </ul>
       </div>
+      </div>
+      </template>
+    
     </div>
+ 
   </div>
 </template>
 
