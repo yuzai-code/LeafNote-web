@@ -10,7 +10,7 @@
     </div>
 
     <!-- 操作按钮组 -->
-    <div class="flex gap-2 mb-4 flex-none">
+    <div class="flex gap-2 mb-4 flex-none justify-center">
       <button
         class="btn btn-sm btn-outline tooltip tooltip-bottom"
         data-tip="新建笔记"
@@ -109,7 +109,7 @@
                 />
               </svg>
               <!-- 文件夹图标 -->
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -162,7 +162,7 @@
                   <div class="flex items-center gap-2 flex-1">
                     <div class="w-4"></div>
                     <svg
-                      class="w-4 h-4"
+                      class="w-5 h-5"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -209,7 +209,7 @@
                       </svg>
                       <!-- 文件夹图标 -->
                       <svg
-                        class="w-4 h-4"
+                        class="w-5 h-5"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
