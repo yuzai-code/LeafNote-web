@@ -14,7 +14,7 @@
       <button
         class="btn btn-sm btn-outline tooltip tooltip-bottom"
         data-tip="新建笔记"
-        @click="() => handleCreateNote(null)"
+        @click="handleCreateNote(null)"
       >
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path
@@ -84,7 +84,7 @@
         <TreeFolder
           :folder="folder"
           @select-note="handleNoteClick"
-          @create-note="handleCreateNote"
+          @create-note="(folder) => handleCreateNote(folder)"
           @create-folder="handleCreateSubFolder"
           @rename-folder="handleRename"
           @delete-folder="handleDeleteFolder"
@@ -180,13 +180,15 @@ const generateUniqueFilePath = (title: string, folder: Category | null): string 
 
 // 处理新建笔记
 const handleCreateNote = async (folder: Category | null) => {
+  console.log('创建笔记的目录:', folder); // 添加日志
   try {
+    // 使用传入的目录信息
     const title = generateUniqueNoteTitle("新建笔记", folder);
     const filePath = generateUniqueFilePath(title, folder);
     const newNote: Partial<Note> = {
       title,
       content: "",
-      category_id: folder?.id,
+      category_id: folder?.id, // 使用传入的目录 ID
       yaml_meta: "",
       file_path: filePath,
     };
@@ -200,10 +202,15 @@ const handleCreateNote = async (folder: Category | null) => {
         folder.notes = [];
       }
       folder.notes.push(createdNote);
+      // 展开目录以显示新笔记
+      folder.expanded = true;
     } else {
       // 如果是根目录，刷新目录列表
       await fetchCategories();
     }
+
+    // 触发选择笔记事件，自动进入编辑模式
+    emit("select-note", createdNote);
   } catch (err: unknown) {
     console.error("创建笔记失败:", err);
     if (err instanceof Error) {

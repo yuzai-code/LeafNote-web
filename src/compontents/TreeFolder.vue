@@ -69,12 +69,12 @@
           v-for="child in folder.children"
           :key="child.id"
           :folder="child"
-          @select-note="handleNoteClick"
-          @create-note="handleCreateNote"
-          @create-folder="handleCreateFolder"
-          @rename-folder="handleRename"
-          @delete-folder="handleDelete"
-          @select-folder="handleFolderClick"
+          @select-note="(note) => emit('select-note', note)"
+          @create-note="(folder) => emit('create-note', folder)"
+          @create-folder="(folder) => emit('create-folder', folder)"
+          @rename-folder="(folder) => emit('rename-folder', folder)"
+          @delete-folder="(folder) => emit('delete-folder', folder)"
+          @select-folder="(folder) => emit('select-folder', folder)"
         />
       </template>
 
@@ -183,6 +183,8 @@ const handleRename = () => {
 
 // 处理新建笔记
 const handleCreateNote = () => {
+  console.log('在目录下创建笔记:', props.folder);
+  // 直接传递当前目录
   emit('create-note', props.folder);
 };
 

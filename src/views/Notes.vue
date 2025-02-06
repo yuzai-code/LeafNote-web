@@ -211,6 +211,13 @@ const handleSelectNote = async (note: Note) => {
     if (editor) {
       editor.setContent(fullNote.content);
     }
+
+    // 如果是新建的笔记，自动进入标题编辑模式
+    if (!fullNote.content) {
+      nextTick(() => {
+        startRename();
+      });
+    }
   } catch (err) {
     console.error("获取笔记内容失败:", err);
   }
