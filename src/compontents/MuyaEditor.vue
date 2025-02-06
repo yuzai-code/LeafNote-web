@@ -42,6 +42,8 @@ Muya.use(PreviewToolBar);
 const editorRef = ref<HTMLElement>();
 const editorContainer = ref<HTMLElement>();
 let editor: Muya | null = null;
+let isUpdating = false;
+let lastContent = ""; // 用于追踪最后一次内容
 
 const props = defineProps<{
   modelValue?: string;
@@ -56,6 +58,29 @@ const emit = defineEmits<{
   (e: "blur"): void;
 }>();
 
+// 添加防抖函数
+const debounce = (fn: Function, delay: number) => {
+  let timer: number | null = null;
+  return (...args: any[]) => {
+    if (timer) clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      fn(...args);
+      timer = null;
+    }, delay);
+  };
+};
+
+// 内容更新函数
+const updateContent = () => {
+  if (!editor) return;
+  const content = editor.getMarkdown();
+  if (content !== lastContent) {
+    lastContent = content;
+    emit("update:modelValue", content);
+    emit("change", content);
+  }
+};
+
 onMounted(() => {
   if (!editorRef.value) return;
 
@@ -63,54 +88,53 @@ onMounted(() => {
     markdown: props.modelValue || "",
   });
 
-  // 设置中文语言
+  lastContent = props.modelValue || "";
   editor.locale(zh);
-
-  // 初始化编辑器
   editor.init();
 
-  // 监听事件
-  editor.on("json-change", () => {
-    const content = editor?.getMarkdown() || "";
-    emit("update:modelValue", content);
-    emit("change", content);
-  });
+  // 使用防抖处理内容更新
+  const handleContentChange = debounce(() => {
+    if (!editor) return;
+    updateContent();
+  }, 100);
 
-  // 监听 text-change 事件
-  editor.on("text-change", () => {
-    const content = editor?.getMarkdown() || "";
-    emit("update:modelValue", content);
-    emit("change", content);
-  });
-
-  // 监听 selection-change 事件
-  editor.on("selection-change", () => {
-    const content = editor?.getMarkdown() || "";
-    emit("update:modelValue", content);
-    emit("change", content);
-  });
+  // 监听所有可能导致内容变化的事件
+  editor.on("text-change", handleContentChange);
+  editor.on("json-change", handleContentChange);
 
   editor.on("focus", () => {
     emit("focus");
   });
 
   editor.on("blur", () => {
+    // 在失焦时立即同步一次内容，确保保存最新状态
+    updateContent();
     emit("blur");
   });
 });
 
-// 监听 modelValue 的变化
+// 优化 watch 逻辑
 watch(
   () => props.modelValue,
   (newValue) => {
-    if (editor && newValue !== editor.getMarkdown()) {
+    if (!editor || isUpdating) return;
+
+    const currentContent = editor.getMarkdown();
+    if (newValue !== currentContent) {
+      isUpdating = true;
+      lastContent = newValue || "";
       editor.setContent(newValue || "");
+      setTimeout(() => {
+        isUpdating = false;
+      }, 10);
     }
   }
 );
 
 onBeforeUnmount(() => {
   if (editor) {
+    // 在组件卸载前确保同步最后的内容
+    updateContent();
     editor.destroy();
     editor = null;
   }
@@ -119,16 +143,20 @@ onBeforeUnmount(() => {
 // 暴露更新内容的方法
 const setContent = (content: string) => {
   if (editor) {
+    isUpdating = true;
+    lastContent = content;
     editor.setContent(content);
+    setTimeout(() => {
+      isUpdating = false;
+      updateContent();
+    }, 10);
   }
 };
 
-// 暴露获取内容的方法
 const getContent = () => {
   return editor?.getMarkdown() || "";
 };
 
-// 暴露获取 HTML 的方法
 const getMarkdownHtml = () => {
   return editor?.getMarkdown() || "";
 };
