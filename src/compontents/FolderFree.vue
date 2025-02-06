@@ -88,6 +88,7 @@
           @create-folder="handleCreateSubFolder"
           @rename-folder="handleRename"
           @delete-folder="handleDeleteFolder"
+          @select-folder="handleFolderClick"
         />
       </template>
     </div>
@@ -302,9 +303,16 @@ const fetchCategories = async () => {
   }
 };
 
+const emit = defineEmits<{
+  (e: "select-note", note: Note): void;
+  (e: "select-folder", folder: Category): void;
+}>();
+
 // 切换文件夹展开/折叠状态
 const toggleFolder = (folder: CategoryWithState) => {
   folder.expanded = !folder.expanded;
+  if (!folder.expanded) return;
+  emit("select-folder", folder);
 };
 
 // 开始重命名
@@ -433,13 +441,14 @@ const handleDeleteFolder = async (folder: Category) => {
   }
 };
 
-const emit = defineEmits<{
-  (e: "select-note", note: Note): void;
-}>();
-
 // 处理笔记点击
 const handleNoteClick = (note: Note) => {
   emit("select-note", note);
+};
+
+// 处理目录点击
+const handleFolderClick = (folder: Category) => {
+  emit("select-folder", folder);
 };
 
 // 组件挂载时获取数据

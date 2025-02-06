@@ -7,7 +7,10 @@
     >
       <div class="flex-1 overflow-y-auto overflow-x-hidden scrollbar-container">
         <div class="h-full">
-          <FolderFree @select-note="handleSelectNote" />
+          <FolderFree 
+            @select-note="handleSelectNote"
+            @select-folder="handleFolderSelect"
+          />
         </div>
       </div>
     </aside>
@@ -23,49 +26,63 @@
       ></div>
     </div>
 
-    <!-- 右侧编辑器 -->
+    <!-- 右侧内容区 -->
     <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- 笔记标题 -->
-      <div v-if="currentNote" class="border-b">
-        <div class="max-w-[800px] mx-auto px-[50px] py-4">
-          <div class="relative group w-full">
-            <input
-              v-if="isEditing"
-              v-model="editingTitle"
-              class="input input-bordered w-full text-xl font-bold"
-              @blur="handleRename"
-              @keyup.enter="handleRename"
-              @keyup.esc="cancelRename"
-              ref="titleInputRef"
-            />
-            <h1
-              v-else
-              class="text-xl font-bold cursor-pointer group-hover:bg-base-200 rounded px-2 py-1"
-              @click="startRename"
-            >
-              {{ currentNote.title }}
-            </h1>
+      <!-- 笔记编辑器 -->
+      <template v-if="currentNote">
+        <div class="border-b">
+          <div class="max-w-[800px] mx-auto px-[50px] py-4">
+            <div class="relative group w-full">
+              <input
+                v-if="isEditing"
+                v-model="editingTitle"
+                class="input input-bordered w-full text-xl font-bold"
+                @blur="handleRename"
+                @keyup.enter="handleRename"
+                @keyup.esc="cancelRename"
+                ref="titleInputRef"
+              />
+              <h1
+                v-else
+                class="text-xl font-bold cursor-pointer group-hover:bg-base-200 rounded px-2 py-1"
+                @click="startRename"
+              >
+                {{ currentNote.title }}
+              </h1>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- 编辑器 -->
-      <div class="flex-1 overflow-y-auto scrollbar-container">
-        <MuyaEditor
-          ref="editorRef"
-          v-model="editorContent"
-          :autoFocus="true"
-          @change="handleEditorChange"
-        />
-      </div>
+        <div class="flex-1 overflow-y-auto scrollbar-container">
+          <MuyaEditor
+            ref="editorRef"
+            v-model="editorContent"
+            :autoFocus="true"
+            @change="handleEditorChange"
+          />
+        </div>
+      </template>
+      
+      <!-- 笔记卡片列表 -->
+      <template v-else>
+        <div class="flex-1 overflow-y-auto scrollbar-container">
+          <NoteCards
+            :folder="currentFolder"
+            :notes="folderNotes"
+            :loading="loading"
+            @select-note="handleSelectNote"
+          />
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted, nextTick } from "vue";
+import { ref, onUnmounted, nextTick, computed } from "vue";
 import FolderFree from "../compontents/FolderFree.vue";
 import MuyaEditor from "../compontents/MuyaEditor.vue";
-import { Note } from "../api/types";
+import NoteCards from "../compontents/NoteCards.vue";
+import { Note, Category } from "../api/types";
 import { ApiService } from "../api/index";
 
 const SIDEBAR_WIDTH_KEY = "leafnote-sidebar-width";
@@ -230,6 +247,36 @@ onUnmounted(() => {
     clearTimeout(saveTimeout.value);
   }
 });
+
+// 当前目录状态
+const currentFolder = ref<Category | null>(null);
+const folderNotes = ref<Note[] | null>(null);
+const loading = ref(false);
+
+// 处理目录选择
+const handleFolderSelect = async (folder: Category) => {
+  console.log('选择目录:', folder); // 添加日志
+  try {
+    // 清空当前笔记
+    currentNote.value = null;
+    editorContent.value = '';
+    
+    // 设置当前目录
+    currentFolder.value = folder;
+    
+    // 开始加载
+    loading.value = true;
+
+    // 直接使用目录中的笔记数据
+    folderNotes.value = folder.notes || [];
+    console.log('目录笔记:', folderNotes.value); // 添加日志
+  } catch (err) {
+    console.error("获取目录笔记失败:", err);
+    folderNotes.value = null;
+  } finally {
+    loading.value = false;
+  }
+};
 
 </script>
 

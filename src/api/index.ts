@@ -33,32 +33,8 @@ class WebApi {
   }
   // 获取目录列表
   static async getCategories(): Promise<Category[]> {
-    // 1. 获取所有目录
+    // 直接获取目录数据,API 响应中已包含笔记
     const categories = await this.fetchApi<Category[]>("/categories");
-
-    // 2. 获取所有笔记
-    const notes = await this.getNotes();
-
-    // 3. 将笔记分配到对应的目录中
-    const categoriesMap = new Map<string, Category>();
-    categories.forEach((category) => {
-      category.notes = [];
-      categoriesMap.set(category.id, category);
-    });
-
-    // 4. 将笔记添加到对应的目录中
-    notes.forEach((note) => {
-      if (note.category_id) {
-        const category = categoriesMap.get(note.category_id);
-        if (category) {
-          if (!category.notes) {
-            category.notes = [];
-          }
-          category.notes.push(note);
-        }
-      }
-    });
-
     return categories;
   }
 
@@ -73,6 +49,11 @@ class WebApi {
   // 获取笔记列表
   static async getNotes(): Promise<Note[]> {
     return this.fetchApi<Note[]>("/notes");
+  }
+
+  // 获取指定目录下的笔记
+  static async getNotesByCategory(categoryId: string): Promise<Note[]> {
+    return this.fetchApi<Note[]>(`/categories/${categoryId}/notes`);
   }
 
   // 笔记相关接口
@@ -168,6 +149,16 @@ class TauriApi {
     }
   }
 
+  // 获取指定目录下的笔记
+  static async getNotesByCategory(categoryId: string): Promise<Note[]> {
+    try {
+      return await invoke<Note[]>("get_category_notes", { categoryId });
+    } catch (error) {
+      console.error("获取目录笔记失败:", error);
+      throw error;
+    }
+  }
+
   // 笔记相关接口
   static async createNote(note: Partial<Note>): Promise<Note> {
     return await invoke<Note>("create_note", { note });
@@ -250,6 +241,11 @@ export class ApiService {
       console.error("获取笔记列表失败:", error);
       throw error;
     }
+  }
+
+  // 获取指定目录下的笔记
+  static async getNotesByCategory(categoryId: string): Promise<Note[]> {
+    return this.api.getNotesByCategory(categoryId);
   }
 
   // 笔记相关接口

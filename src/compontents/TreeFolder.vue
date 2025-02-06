@@ -74,6 +74,7 @@
           @create-folder="handleCreateFolder"
           @rename-folder="handleRename"
           @delete-folder="handleDelete"
+          @select-folder="handleFolderClick"
         />
       </template>
 
@@ -132,6 +133,7 @@ const emit = defineEmits<{
   (e: 'create-folder', folder: CategoryWithState): void;
   (e: 'rename-folder', folder: CategoryWithState): void;
   (e: 'delete-folder', folder: CategoryWithState): void;
+  (e: 'select-folder', folder: CategoryWithState): void;
 }>();
 
 // 计算是否有子元素（子目录或笔记）
@@ -142,6 +144,8 @@ const hasChildren = computed(() => {
 // 切换文件夹展开/折叠状态
 const toggleFolder = () => {
   props.folder.expanded = !props.folder.expanded;
+  // 每次点击都触发目录选择事件
+  emit('select-folder', props.folder);
 };
 
 // 处理笔记点击
@@ -191,6 +195,13 @@ const handleCreateFolder = () => {
 const handleDelete = () => {
   emit('delete-folder', props.folder);
 };
+
+// 处理目录点击
+const handleFolderClick = (folder: CategoryWithState) => {
+  emit('select-folder', folder);
+};
+
+// 组件挂载时获取数据
 </script>
 
 <style scoped>
