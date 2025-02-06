@@ -17,10 +17,10 @@
           class="menu dropdown-content bg-base-100 rounded-box z-[9999] min-w-[7rem] whitespace-nowrap p-1 shadow absolute"
           :style="dropdownStyle"
           v-click-outside="closeDropdown">
-        <li><a>新建笔记</a></li>
-        <li><a>新建目录</a></li>
-        <li><a>重命名</a></li>
-        <li><a>删除</a></li>
+        <li><a href="javascript:void(0)" @click.stop.prevent="handleCreateNote">新建笔记</a></li>
+        <li><a href="javascript:void(0)" @click.stop.prevent="handleCreateFolder">新建目录</a></li>
+        <li><a href="javascript:void(0)" @click.stop.prevent="handleRename">重命名</a></li>
+        <li><a href="javascript:void(0)" @click.stop.prevent="handleDelete">删除</a></li>
       </ul>
     </div>
   </div>
@@ -45,6 +45,13 @@ const dropdownStyle = computed(() => {
   };
 });
 
+const emit = defineEmits<{
+  (e: "create-note"): void;
+  (e: "create-folder"): void;
+  (e: "rename"): void;
+  (e: "delete"): void;
+}>();
+
 const toggleDropdown = (e: MouseEvent) => {
   e.stopPropagation();
   isOpen.value = !isOpen.value;
@@ -52,6 +59,34 @@ const toggleDropdown = (e: MouseEvent) => {
 
 const closeDropdown = () => {
   isOpen.value = false;
+};
+
+// 处理新建笔记
+const handleCreateNote = (e: Event) => {
+  e.stopPropagation();
+  emit('create-note');
+  closeDropdown();
+};
+
+// 处理新建目录
+const handleCreateFolder = (e: Event) => {
+  e.stopPropagation();
+  emit('create-folder');
+  closeDropdown();
+};
+
+// 处理重命名
+const handleRename = (e: Event) => {
+  e.stopPropagation();
+  emit('rename');
+  closeDropdown();
+};
+
+// 处理删除
+const handleDelete = (e: Event) => {
+  e.stopPropagation();
+  emit('delete');
+  closeDropdown();
 };
 
 // 点击外部关闭下拉菜单
@@ -70,13 +105,6 @@ const vClickOutside = {
     }
   }
 };
-
-defineEmits<{
-  (e: "create-note"): void;
-  (e: "create-folder"): void;
-  (e: "rename"): void;
-  (e: "delete"): void;
-}>();
 </script>
 
 <style scoped>
@@ -92,5 +120,16 @@ defineEmits<{
 .dropdown .dropdown-content {
   position: fixed;
   margin-top: 0.5rem;
+}
+
+/* 添加菜单项的悬停效果 */
+.menu li a {
+  cursor: pointer;
+  display: block;
+  padding: 0.5rem 1rem;
+}
+
+.menu li a:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 </style>
