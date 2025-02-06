@@ -26,8 +26,27 @@
     <!-- 右侧编辑器 -->
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- 笔记标题 -->
-      <div v-if="currentNote" class="p-4 border-b">
-        <h1 class="text-xl font-bold">{{ currentNote.title }}</h1>
+      <div v-if="currentNote" class="border-b">
+        <div class="max-w-[800px] mx-auto px-[50px] py-4">
+          <div class="relative group w-full">
+            <input
+              v-if="isEditing"
+              v-model="editingTitle"
+              class="input input-bordered w-full text-xl font-bold"
+              @blur="handleRename"
+              @keyup.enter="handleRename"
+              @keyup.esc="cancelRename"
+              ref="titleInputRef"
+            />
+            <h1
+              v-else
+              class="text-xl font-bold cursor-pointer group-hover:bg-base-200 rounded px-2 py-1"
+              @click="startRename"
+            >
+              {{ currentNote.title }}
+            </h1>
+          </div>
+        </div>
       </div>
       <!-- 编辑器 -->
       <div class="flex-1 overflow-y-auto scrollbar-container">
@@ -43,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted, nextTick } from "vue";
 import FolderFree from "../compontents/FolderFree.vue";
 import MuyaEditor from "../compontents/MuyaEditor.vue";
 import { Note } from "../api/types";
@@ -110,6 +129,57 @@ const editorRef = ref();
 const editorContent = ref("");
 const currentNote = ref<Note | null>(null);
 const saveTimeout = ref<number | null>(null);
+
+// 标题编辑相关状态
+const isEditing = ref(false);
+const editingTitle = ref('');
+const titleInputRef = ref<HTMLInputElement | null>(null);
+
+// 开始重命名
+const startRename = () => {
+  if (!currentNote.value) return;
+  isEditing.value = true;
+  editingTitle.value = currentNote.value.title;
+  nextTick(() => {
+    if (titleInputRef.value) {
+      titleInputRef.value.focus();
+      titleInputRef.value.select();
+    }
+  });
+};
+
+// 取消重命名
+const cancelRename = () => {
+  isEditing.value = false;
+  if (currentNote.value) {
+    editingTitle.value = currentNote.value.title;
+  }
+};
+
+// 处理重命名
+const handleRename = async () => {
+  if (!currentNote.value || !editingTitle.value.trim()) {
+    cancelRename();
+    return;
+  }
+
+  const newTitle = editingTitle.value.trim();
+  if (newTitle === currentNote.value.title) {
+    cancelRename();
+    return;
+  }
+
+  try {
+    await ApiService.updateNote(currentNote.value.id, {
+      ...currentNote.value,
+      title: newTitle
+    });
+    currentNote.value.title = newTitle;
+    isEditing.value = false;
+  } catch (err) {
+    console.error("重命名失败:", err);
+  }
+};
 
 // 处理笔记选择
 const handleSelectNote = async (note: Note) => {
