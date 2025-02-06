@@ -12,7 +12,8 @@
       <div class="flex items-center gap-2 flex-1">
         <!-- 展开/折叠图标 -->
         <svg
-          class="w-4 h-4 transition-transform"
+          v-if="hasChildren"
+          class="w-3.5 h-3.5 transition-transform"
           :class="{ 'rotate-90': folder.expanded }"
           viewBox="0 0 24 24"
           fill="none"
@@ -25,6 +26,7 @@
             d="M9 5l7 7-7 7"
           />
         </svg>
+        <div v-else class="w-3.5"></div>
         <!-- 文件夹图标 -->
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path
@@ -61,6 +63,20 @@
 
     <!-- 子目录和笔记 -->
     <div v-if="folder.expanded" class="mt-1">
+      <!-- 递归渲染子目录 -->
+      <template v-if="folder.children?.length">
+        <TreeFolder
+          v-for="child in folder.children"
+          :key="child.id"
+          :folder="child"
+          @select-note="handleNoteClick"
+          @create-note="handleCreateNote"
+          @create-folder="handleCreateFolder"
+          @rename-folder="handleRename"
+          @delete-folder="handleDelete"
+        />
+      </template>
+
       <!-- 显示笔记 -->
       <template v-if="folder.notes?.length">
         <div
@@ -96,22 +112,12 @@
           </div>
         </div>
       </template>
-
-      <!-- 递归渲染子目录 -->
-      <template v-if="folder.children?.length">
-        <TreeFolder
-          v-for="child in folder.children"
-          :key="child.id"
-          :folder="child"
-          @select-note="handleNoteClick"
-        />
-      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, computed } from 'vue';
 import type { Note } from '../api/types';
 import type { CategoryWithState } from '../api/types';
 import FolderItem from './FolderItem.vue';
@@ -122,7 +128,16 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'select-note', note: Note): void;
+  (e: 'create-note', folder: CategoryWithState): void;
+  (e: 'create-folder', folder: CategoryWithState): void;
+  (e: 'rename-folder', folder: CategoryWithState): void;
+  (e: 'delete-folder', folder: CategoryWithState): void;
 }>();
+
+// 计算是否有子元素（子目录或笔记）
+const hasChildren = computed(() => {
+  return Boolean(props.folder.children?.length || props.folder.notes?.length);
+});
 
 // 切换文件夹展开/折叠状态
 const toggleFolder = () => {
@@ -157,24 +172,24 @@ const cancelRename = () => {
 // 处理重命名
 const handleRename = () => {
   if (props.folder.editingName?.trim() && props.folder.editingName !== props.folder.name) {
-    props.folder.name = props.folder.editingName.trim();
+    emit('rename-folder', props.folder);
   }
   props.folder.isEditing = false;
 };
 
 // 处理新建笔记
 const handleCreateNote = () => {
-  // 实现新建笔记逻辑
+  emit('create-note', props.folder);
 };
 
 // 处理新建目录
 const handleCreateFolder = () => {
-  // 实现新建子目录逻辑
+  emit('create-folder', props.folder);
 };
 
 // 处理删除
 const handleDelete = () => {
-  // 实现删除目录逻辑
+  emit('delete-folder', props.folder);
 };
 </script>
 

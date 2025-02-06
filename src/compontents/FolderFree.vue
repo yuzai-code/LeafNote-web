@@ -84,6 +84,10 @@
         <TreeFolder
           :folder="folder"
           @select-note="handleNoteClick"
+          @create-note="handleCreateNote"
+          @create-folder="handleCreateSubFolder"
+          @rename-folder="handleRename"
+          @delete-folder="handleDeleteFolder"
         />
       </template>
     </div>
