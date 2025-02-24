@@ -90,6 +90,7 @@
           @delete-folder="handleDeleteFolder"
           @select-folder="handleFolderClick"
         />
+        
       </template>
     </div>
  
@@ -98,29 +99,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, reactive } from "vue";
-import type { ComponentPublicInstance } from "vue";
 import { Category, Note } from "../api/types";
-import { ApiService } from "../api";
-import FolderItem from "./FolderItem.vue";
-import TreeFolder from "./TreeFolder.vue";
 import type { CategoryWithState } from "../api/types";
+import { ApiService } from "../api";
+import TreeFolder from "./TreeFolder.vue";
+import Tree from 'primevue/tree';
 
 // 目录列表状态
-const folders = ref<CategoryWithState[]>([]);
+const folders = ref();
 const loading = ref(false);
 const error = ref<string | null>(null);
 const renameInputs = reactive<Record<string, HTMLInputElement | null>>({});
 
-// 设置输入框引用
-const setInputRef = (el: ComponentPublicInstance | Element | null, id: string) => {
-  if (el instanceof HTMLInputElement) {
-    renameInputs[id] = el;
-  } else if (el && "focus" in el && typeof el.focus === "function") {
-    renameInputs[id] = (el as unknown) as HTMLInputElement;
-  } else {
-    renameInputs[id] = null;
-  }
-};
 
 // 生成唯一的笔记标题
 const generateUniqueNoteTitle = (baseName: string, folder: Category | null): string => {
@@ -132,9 +122,9 @@ const generateUniqueNoteTitle = (baseName: string, folder: Category | null): str
     existingNames = new Set(folder.notes.map((note) => note.title));
   } else if (!folder) {
     // 如果是根目录，获取所有根目录下的笔记标题
-    folders.value.forEach((f) => {
+    folders.value.forEach((f: Category) => {
       if (f.notes) {
-        f.notes.forEach((note) => existingNames.add(note.title));
+        f.notes.forEach((note: Note) => existingNames.add(note.title));
       }
     });
   }
@@ -231,7 +221,7 @@ const generateUniqueName = (baseName: string, parentFolder?: Category): string =
     existingNames = new Set(parentFolder.children?.map((f) => f.name) || []);
   } else {
     // 如果是顶级目录，使用顶级目录名称列表
-    existingNames = new Set(folders.value.map((f) => f.name));
+    existingNames = new Set(folders.value.map((f: Category) => f.name));
   }
 
   let newName = baseName;
@@ -315,26 +305,7 @@ const emit = defineEmits<{
   (e: "select-folder", folder: Category): void;
 }>();
 
-// 切换文件夹展开/折叠状态
-const toggleFolder = (folder: CategoryWithState) => {
-  folder.expanded = !folder.expanded;
-  if (!folder.expanded) return;
-  emit("select-folder", folder);
-};
 
-// 开始重命名
-const startRename = async (
-  folder: Category & { isEditing?: boolean; editingName?: string }
-) => {
-  folder.isEditing = true;
-  folder.editingName = folder.name;
-  await nextTick();
-  const input = renameInputs[folder.id];
-  if (input) {
-    input.focus();
-    input.select();
-  }
-};
 
 // 取消重命名
 const cancelRename = (
@@ -361,7 +332,7 @@ const handleRename = async (
 
     // 更新目录信息
     Object.assign(folder, {
-      ...(updatedCategory as CategoryWithState),
+      ...(updatedCategory ),
       expanded: folder.expanded,
       isEditing: false,
     });
@@ -429,12 +400,12 @@ const handleDeleteFolder = async (folder: Category) => {
 
     // 从目录列表或父目录的子目录列表中移除
     if (folder.parent_id) {
-      const parentFolder = folders.value.find((f) => f.id === folder.parent_id);
+      const parentFolder = folders.value.find((f: Category) => f.id === folder.parent_id);
       if (parentFolder && parentFolder.children) {
-        parentFolder.children = parentFolder.children.filter((f) => f.id !== folder.id);
+        parentFolder.children = parentFolder.children.filter((f: Category) => f.id !== folder.id);
       }
     } else {
-      folders.value = folders.value.filter((f) => f.id !== folder.id);
+      folders.value = folders.value.filter((f: Category) => f.id !== folder.id);
     }
 
     error.value = null;
