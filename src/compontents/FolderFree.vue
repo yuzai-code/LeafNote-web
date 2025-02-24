@@ -90,7 +90,6 @@
           @delete-folder="handleDeleteFolder"
           @select-folder="handleFolderClick"
         />
-        
       </template>
     </div>
  
@@ -100,13 +99,12 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, reactive } from "vue";
 import { Category, Note } from "../api/types";
-import type { CategoryWithState } from "../api/types";
 import { ApiService } from "../api";
 import TreeFolder from "./TreeFolder.vue";
-import Tree from 'primevue/tree';
+import type { CategoryWithState } from "../api/types";
 
 // 目录列表状态
-const folders = ref();
+const folders = ref<CategoryWithState[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const renameInputs = reactive<Record<string, HTMLInputElement | null>>({});
@@ -122,9 +120,9 @@ const generateUniqueNoteTitle = (baseName: string, folder: Category | null): str
     existingNames = new Set(folder.notes.map((note) => note.title));
   } else if (!folder) {
     // 如果是根目录，获取所有根目录下的笔记标题
-    folders.value.forEach((f: Category) => {
+    folders.value.forEach((f) => {
       if (f.notes) {
-        f.notes.forEach((note: Note) => existingNames.add(note.title));
+        f.notes.forEach((note) => existingNames.add(note.title));
       }
     });
   }
@@ -221,7 +219,7 @@ const generateUniqueName = (baseName: string, parentFolder?: Category): string =
     existingNames = new Set(parentFolder.children?.map((f) => f.name) || []);
   } else {
     // 如果是顶级目录，使用顶级目录名称列表
-    existingNames = new Set(folders.value.map((f: Category) => f.name));
+    existingNames = new Set(folders.value.map((f) => f.name));
   }
 
   let newName = baseName;
@@ -332,7 +330,7 @@ const handleRename = async (
 
     // 更新目录信息
     Object.assign(folder, {
-      ...(updatedCategory ),
+      ...(updatedCategory as CategoryWithState),
       expanded: folder.expanded,
       isEditing: false,
     });
@@ -400,12 +398,12 @@ const handleDeleteFolder = async (folder: Category) => {
 
     // 从目录列表或父目录的子目录列表中移除
     if (folder.parent_id) {
-      const parentFolder = folders.value.find((f: Category) => f.id === folder.parent_id);
+      const parentFolder = folders.value.find((f) => f.id === folder.parent_id);
       if (parentFolder && parentFolder.children) {
-        parentFolder.children = parentFolder.children.filter((f: Category) => f.id !== folder.id);
+        parentFolder.children = parentFolder.children.filter((f) => f.id !== folder.id);
       }
     } else {
-      folders.value = folders.value.filter((f: Category) => f.id !== folder.id);
+      folders.value = folders.value.filter((f) => f.id !== folder.id);
     }
 
     error.value = null;
