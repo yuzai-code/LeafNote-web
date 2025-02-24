@@ -32,6 +32,9 @@ importers:
       '@muyajs/core':
         specifier: ^0.0.32
         version: 0.0.32
+      '@primeuix/themes':
+        specifier: 1.0.0-rc.1
+        version: 1.0.0-rc.1
       '@tauri-apps/api':
         specifier: ^2.2.0
         version: 2.2.0
@@ -83,6 +86,9 @@ importers:
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
+      primevue:
+        specifier: ^4.2.5
+        version: 4.2.5(vue@3.5.13(typescript@5.6.3))
       vue:
         specifier: ^3.4.15
         version: 3.5.13(typescript@5.6.3)
@@ -606,6 +612,35 @@ packages:
 
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
+
+  '@primeuix/styled@0.3.2':
+    resolution: {integrity: sha512-ColZes0+/WKqH4ob2x8DyNYf1NENpe5ZguOvx5yCLxaP8EIMVhLjWLO/3umJiDnQU4XXMLkn2mMHHw+fhTX/mw==}
+    engines: {node: '>=12.11.0'}
+
+  '@primeuix/styled@0.5.0':
+    resolution: {integrity: sha512-k5CTQ+10cXIXxZTep7sktmYe8lJkjmUaFVDAc1OCsWTJR+bhBy/s6zWIatGljVtuf3RmTSxtlrHQeFLjPmdUNQ==}
+    engines: {node: '>=12.11.0'}
+
+  '@primeuix/themes@1.0.0-rc.1':
+    resolution: {integrity: sha512-F9dJIPPQXwWYdbgE8J04n1eLMuVmJ+XeAkrSqQu2NqGHUffB3dH2Zm0Mqknu0L7xrt/tjqnZ1EBlwsmvi1rycQ==}
+
+  '@primeuix/utils@0.3.2':
+    resolution: {integrity: sha512-B+nphqTQeq+i6JuICLdVWnDMjONome2sNz0xI65qIOyeB4EF12CoKRiCsxuZ5uKAkHi/0d1LqlQ9mIWRSdkavw==}
+    engines: {node: '>=12.11.0'}
+
+  '@primeuix/utils@0.5.1':
+    resolution: {integrity: sha512-/bYirtF3gJOGrRQfQ5tUyQOLEria7wg/UCqvpIydTAxLmj/UWgWwh2kAjYVp49eldm1+2sk4+TDkbAz8XcPpew==}
+    engines: {node: '>=12.11.0'}
+
+  '@primevue/core@4.2.5':
+    resolution: {integrity: sha512-+oWBIQs5dLd2Ini4KEVOlvPILk989EHAskiFS3R/dz3jeOllJDMZFcSp8V9ddV0R3yDaPdLVkfHm2Q5t42kU2Q==}
+    engines: {node: '>=12.11.0'}
+    peerDependencies:
+      vue: ^3.3.0
+
+  '@primevue/icons@4.2.5':
+    resolution: {integrity: sha512-WFbUMZhQkXf/KmwcytkjGVeJ9aGEDXjP3uweOjQZMmRdEIxFnqYYpd90wE90JE1teZn3+TVnT4ZT7ejGyEXnFQ==}
+    engines: {node: '>=12.11.0'}
 
   '@remirror/core-constants@3.0.0':
     resolution: {integrity: sha512-42aWfPrimMfDKDi4YegyS7x+/0tlzaqwPQCULLanv3DMIlu96KTJR0fM5isWX2UViOqlGnX6YFgqWepcX+XMNg==}
@@ -1472,8 +1507,8 @@ packages:
   fastq@1.18.0:
     resolution: {integrity: sha512-QKHXPW0hD8g4UET03SdOdunzSouc9N4AuHdsX8XNcTsuz+yYFILVNIX4l9yHABMhiEI9Db0JTTIpu0wB+Y1QQw==}
 
-  file-icons@git+https://git@github.com:file-icons/atom.git#2b897cb11552405322896080cb3406b96e678239:
-    resolution: {commit: 2b897cb11552405322896080cb3406b96e678239, repo: git@github.com:file-icons/atom.git, type: git}
+  file-icons@https://codeload.github.com/file-icons/atom/tar.gz/2b897cb11552405322896080cb3406b96e678239:
+    resolution: {tarball: https://codeload.github.com/file-icons/atom/tar.gz/2b897cb11552405322896080cb3406b96e678239}
     version: 2.1.47
     engines: {atom: '>=1.25.0'}
 
@@ -1952,6 +1987,10 @@ packages:
   postcss@8.5.1:
     resolution: {integrity: sha512-6oz2beyjc5VMn/KV1pPw8fliQkhBXrVn1Z3TVyqZxU8kZpzEKhBdmCFqI6ZbmGtamQvQGuU1sgPTk8ZrXDD7jQ==}
     engines: {node: ^10 || ^12 || >=14}
+
+  primevue@4.2.5:
+    resolution: {integrity: sha512-7UMOIJvdFz4jQyhC76yhNdSlHtXvVpmE2JSo2ndUTBWjWJOkYyT562rQ4ayO+bMdJLtzBGqgY64I9ZfEvNd7vQ==}
+    engines: {node: '>=12.11.0'}
 
   prismjs@1.29.0:
     resolution: {integrity: sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==}
@@ -2955,7 +2994,7 @@ snapshots:
 
   '@marktext/file-icons@1.0.6':
     dependencies:
-      file-icons: git+https://git@github.com:file-icons/atom.git#2b897cb11552405322896080cb3406b96e678239
+      file-icons: https://codeload.github.com/file-icons/atom/tar.gz/2b897cb11552405322896080cb3406b96e678239
 
   '@mixmark-io/domino@2.2.0': {}
 
@@ -3064,6 +3103,35 @@ snapshots:
     optional: true
 
   '@popperjs/core@2.11.8': {}
+
+  '@primeuix/styled@0.3.2':
+    dependencies:
+      '@primeuix/utils': 0.3.2
+
+  '@primeuix/styled@0.5.0':
+    dependencies:
+      '@primeuix/utils': 0.5.1
+
+  '@primeuix/themes@1.0.0-rc.1':
+    dependencies:
+      '@primeuix/styled': 0.5.0
+
+  '@primeuix/utils@0.3.2': {}
+
+  '@primeuix/utils@0.5.1': {}
+
+  '@primevue/core@4.2.5(vue@3.5.13(typescript@5.6.3))':
+    dependencies:
+      '@primeuix/styled': 0.3.2
+      '@primeuix/utils': 0.3.2
+      vue: 3.5.13(typescript@5.6.3)
+
+  '@primevue/icons@4.2.5(vue@3.5.13(typescript@5.6.3))':
+    dependencies:
+      '@primeuix/utils': 0.3.2
+      '@primevue/core': 4.2.5(vue@3.5.13(typescript@5.6.3))
+    transitivePeerDependencies:
+      - vue
 
   '@remirror/core-constants@3.0.0': {}
 
@@ -3936,7 +4004,7 @@ snapshots:
     dependencies:
       reusify: 1.0.4
 
-  file-icons@git+https://git@github.com:file-icons/atom.git#2b897cb11552405322896080cb3406b96e678239:
+  file-icons@https://codeload.github.com/file-icons/atom/tar.gz/2b897cb11552405322896080cb3406b96e678239:
     dependencies:
       atom-fs: 0.2.1
       lru-cache: 5.1.1
@@ -4463,6 +4531,15 @@ snapshots:
       nanoid: 3.3.8
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  primevue@4.2.5(vue@3.5.13(typescript@5.6.3)):
+    dependencies:
+      '@primeuix/styled': 0.3.2
+      '@primeuix/utils': 0.3.2
+      '@primevue/core': 4.2.5(vue@3.5.13(typescript@5.6.3))
+      '@primevue/icons': 4.2.5(vue@3.5.13(typescript@5.6.3))
+    transitivePeerDependencies:
+      - vue
 
   prismjs@1.29.0: {}
 
